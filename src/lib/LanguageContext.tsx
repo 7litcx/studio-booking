@@ -1,0 +1,758 @@
+import React, { createContext, useContext, useState, useEffect } from 'react'
+
+export type Language = 'en' | 'ar'
+
+interface LanguageContextProps {
+  language: Language
+  setLanguage: (lang: Language) => void
+  t: (key: string) => string
+  isRtl: boolean
+}
+
+const translations = {
+  en: {
+    // Navigation
+    'nav.studios': 'Studios',
+    'nav.equipment': 'Equipment',
+    'nav.pricing': 'Pricing',
+    'nav.faq': 'FAQ',
+    'nav.signIn': 'Sign In',
+    'nav.bookNow': 'Book Now',
+    'nav.theme': 'Theme',
+    'nav.langToggle': 'العربية',
+
+    // Hero
+    'hero.badge': 'Premium Creative Spaces',
+    'hero.title': 'Book Premium Creative Studios.',
+    'hero.desc': 'Reserve photography, videography, podcast, and production studios with a seamless luxury booking experience.',
+    'hero.primaryBtn': 'Book a Studio',
+    'hero.secondaryBtn': 'Explore Spaces',
+    'hero.scroll': 'Scroll to explore',
+
+    // Why Choose Us
+    'why.title1': 'Elevate Your',
+    'why.title2': 'Production',
+    'why.desc': 'We provide more than just space. Lumière offers an ecosystem of premium studios equipped with state-of-the-art technology, designed to bring your most ambitious visions to life.',
+    'why.statBookings': 'Bookings Completed',
+    'why.statStudios': 'Premium Studios',
+    'why.statRating': 'Average Rating',
+    'why.statSatisfaction': 'Customer Satisfaction',
+
+    // Categories
+    'cat.browseTitle': 'Browse by Category',
+    'cat.browseDesc': 'Find the perfect space tailored precisely to your production needs.',
+    'cat.photography': 'Photography',
+    'cat.photographyDesc': 'Editorial & Fashion',
+    'cat.video': 'Video Production',
+    'cat.videoDesc': 'Commercial & Film',
+    'cat.podcast': 'Podcast',
+    'cat.podcastDesc': 'Audio & Interviews',
+    'cat.cyclorama': 'Cyclorama',
+    'cat.cycloramaDesc': 'Infinity Walls',
+    'cat.content': 'Content Creation',
+    'cat.contentDesc': 'Social Media',
+    'cat.sets': 'Commercial Sets',
+    'cat.setsDesc': 'Built Environments',
+    'cat.music': 'Music Recording',
+    'cat.musicDesc': 'Sound Engineering',
+    'cat.creative': 'Creative Spaces',
+    'cat.creativeDesc': 'Meetings & Events',
+
+    // Featured Studios
+    'featured.title': 'Featured Spaces',
+    'featured.desc': 'Curated environments designed for uncompromising creators.',
+    'featured.viewAll': 'View All Studios',
+    'featured.available': 'Available Today',
+    'featured.booked': 'Booked',
+    'featured.capacity': 'Up to {capacity}',
+    'featured.hour': 'hr',
+    'featured.bookNowPrice': 'Book Now - ${price}/hr',
+
+    // How It Works
+    'how.badge': 'Seamless Reservation',
+    'how.title': 'How Lumière Works',
+    'how.desc': 'A frictionless booking experience designed specifically for high-efficiency creative professionals.',
+    'how.step1Title': 'Explore & Choose',
+    'how.step1Desc': 'Browse our curated catalog of premium photography, film, and audio studios equipped with distinct design themes and dimensions.',
+    'how.step2Title': 'Select Gear & Schedule',
+    'how.step2Desc': 'Pick your calendar slot, choose optional high-end rental packages (RED cameras, lights, audio sets), and select custom backdrop colors.',
+    'how.step3Title': 'Instant Access',
+    'how.step3Desc': 'Check out securely. Receive instant email confirmations, invoices, and digital pin codes for smart gate and studio access.',
+
+    // Equipment
+    'eq.badge': 'High-End Production Gear',
+    'eq.title': 'Available Equipment',
+    'eq.desc': 'Add premium gear to your studio booking. Skip the heavy transport and use our in-house state-of-the-art rental arsenal.',
+    'eq.all': 'All Gear',
+    'eq.cameras': 'Cameras & Lenses',
+    'eq.lighting': 'Lighting & Grip',
+    'eq.audio': 'Audio & Sound',
+    'eq.day': 'day',
+    'eq.addToBooking': 'Add to booking',
+    'eq.added': 'Added',
+    'eq.item.1.name': 'RED V-Raptor 8K VV',
+    'eq.item.1.desc': 'Cinema camera for ultra-high resolution videography.',
+    'eq.item.2.name': 'Aputure LS 600d Pro',
+    'eq.item.2.desc': 'Daylight-balanced point-source LED light.',
+    'eq.item.3.name': 'Shure SM7B Vocal Mic',
+    'eq.item.3.desc': 'Industry-standard dynamic microphone for broadcasting & podcasts.',
+    'eq.item.4.name': 'Sony FX3 Cinema Line',
+    'eq.item.4.desc': 'Compact full-frame camera for versatile documentary and narrative shoots.',
+    'eq.item.5.name': 'Profoto D2 Studio Flash',
+    'eq.item.5.desc': 'Monolight with TTL and High-Speed Sync for fashion photography.',
+    'eq.item.6.name': 'Sennheiser MKH416 Shotgun Mic',
+    'eq.item.6.desc': 'RF condenser shotgun microphone for pristine location recording.',
+
+    // Pricing
+    'pricing.badge': 'Transparent Pricing',
+    'pricing.title': 'Choose Your Production Plan',
+    'pricing.desc': 'No hidden fees. Book high-end creative spaces with simple, straightforward pricing.',
+    'pricing.popular': 'Most Popular',
+    // Hourly
+    'pricing.plan1Name': 'Hourly Rental',
+    'pricing.plan1Price': '150',
+    'pricing.plan1Period': 'hour',
+    'pricing.plan1Desc': 'Perfect for quick portrait sessions, product shoots, or podcast recording.',
+    'pricing.plan1F1': 'Minimum booking: 2 hours',
+    'pricing.plan1F2': 'Standard lighting equipment included',
+    'pricing.plan1F3': 'High-speed Wi-Fi & dressing rooms',
+    'pricing.plan1F4': 'Assistance setting up standard backdrops',
+    'pricing.plan1F5': 'Basic green room / lounge access',
+    'pricing.plan1Cta': 'Book Hourly',
+    // Half-Day
+    'pricing.plan2Name': 'Half-Day Pass',
+    'pricing.plan2Price': '550',
+    'pricing.plan2Period': '4 hours',
+    'pricing.plan2Desc': 'Optimized for lookbook shoots, commercial photography, and content creators.',
+    'pricing.plan2F1': '4-hour dedicated studio access',
+    'pricing.plan2F2': 'Premium lighting kit (Aputure / Profoto)',
+    'pricing.plan2F3': '1x Cyclorama background color setup',
+    'pricing.plan2F4': 'Dedicated studio assistant',
+    'pricing.plan2F5': 'Extended lounge access with beverages',
+    'pricing.plan2Cta': 'Book Half-Day',
+    // Full-Day
+    'pricing.plan3Name': 'Full-Day Experience',
+    'pricing.plan3Price': '950',
+    'pricing.plan3Period': '8 hours',
+    'pricing.plan3Desc': 'The complete production package for large-scale campaigns, music videos, and film.',
+    'pricing.plan3F1': '8-hour dedicated studio access',
+    'pricing.plan3F2': 'Full equipment arsenal access',
+    'pricing.plan3F3': 'Unlimited cyclorama color changes',
+    'pricing.plan3F4': 'Full-day sound engineer / technician',
+    'pricing.plan3F5': 'VIP green room, catering & editing suite access',
+    'pricing.plan3Cta': 'Book Full-Day',
+
+    // FAQs
+    'faq.badge': 'Got Questions?',
+    'faq.title': 'Frequently Asked Questions',
+    'faq.desc': 'Everything you need to know about preparing for your creative session at Lumière.',
+    'faq.q1': 'How do I check in and access the studio?',
+    'faq.a1': 'Once your booking is confirmed, you will receive a digital access code via email and SMS 2 hours before your session. A studio coordinator will also be on-site to welcome you, hand over keys, and help you get started.',
+    'faq.q2': 'What is your cancellation and rescheduling policy?',
+    'faq.a2': 'You can reschedule or cancel your booking with a full refund up to 48 hours before your scheduled session. Cancellations made between 24-48 hours will receive a 50% studio credit, and cancellations under 24 hours are non-refundable.',
+    'faq.q3': 'Can I rent additional equipment on the day of production?',
+    'faq.a3': 'Yes! While we recommend reserving key gear in advance during check-out, you can rent any available cameras, lenses, lighting, or sound gear from our on-site inventory on the day. Payments can be processed instantly at reception.',
+    'faq.q4': 'Are the studios soundproofed?',
+    'faq.a4': 'Stage A and the Echo Podcast Suite are fully acoustically treated and sound-insulated, designed specifically for clean video dialogues and broadcast-grade podcast recording. The Velvet Room (photography) is sound-isolated but not fully soundproofed.',
+    'faq.q5': 'Is there parking available on-site?',
+    'faq.a5': 'Yes, we provide 3 dedicated parking spaces per booked studio in our secure private lot, with additional street parking and loading docks available for heavy equipment drop-off.',
+
+    // Testimonials
+    'test.badge': 'Client Success',
+    'test.title': 'Client Voices',
+    'test.desc': "Don't just take our word for it. Hear from the creators who trust us.",
+    'test.item1Quote': 'Lumière completely transformed our production workflow. The attention to detail in their spaces is unmatched. It feels less like renting a studio and more like stepping into a cinematic masterpiece.',
+    'test.item1Name': 'Elena Rodriguez',
+    'test.item1Role': 'Creative Director, Vogue',
+    'test.item2Quote': 'The lighting rigs and acoustic treatments in Stage A are phenomenal. We shot our entire commercial campaign here without a single technical hiccup. True professionals.',
+    'test.item2Name': 'Marcus Chen',
+    'test.item2Role': 'Cinematographer',
+    'test.item3Quote': 'As a podcaster, the Echo Suite is a dream. The aesthetic is beautiful, and the sound quality is pristine. My guests always comment on how premium the experience feels.',
+    'test.item3Name': 'Sarah Jenkins',
+    'test.item3Role': 'Host, The Daily Tech',
+    'test.item4Quote': 'Finding a reliable, high-end cyclorama wall in the city is tough. Lumière exceeded our expectations with their facilities, equipment rental, and impeccable service.',
+    'test.item4Name': 'David Wright',
+    'test.item4Role': 'Fashion Photographer',
+
+    // Footer
+    'footer.slogan': 'Luxury photography, film, and recording spaces crafted for professional creators.',
+    'footer.rights': 'All rights reserved.',
+    'footer.newsletter': 'Join our Newsletter',
+    'footer.newsDesc': 'Receive updates on seasonal installations and early gear reservations.',
+    'footer.emailPlaceholder': 'Your email address',
+    'footer.subscribe': 'Subscribe',
+    'footer.linksLabel': 'Quick Links',
+    'footer.legalLabel': 'Legal',
+    'footer.legalPrivacy': 'Privacy Policy',
+    'footer.legalTerms': 'Terms of Service',
+    'footer.studios': 'Studios',
+    'footer.company': 'Company',
+
+    // Login & Forms
+    'login.title': 'Welcome back',
+    'login.desc': 'Sign in to access your bookings and smart gate pins.',
+    'login.email': 'Email Address',
+    'login.password': 'Password',
+    'login.signInBtn': 'Sign In',
+    'login.forgot': 'Forgot password?',
+    'login.noAccount': "Don't have an account?",
+    'login.signUp': 'Sign up now',
+    'login.tipAdmin': 'Tip: Log in with admin@lumiere.com to see the Admin interface.',
+    'login.errorFill': 'Please fill in all fields.',
+    'login.successAdmin': 'Welcome back, administrator.',
+    'login.successUser': 'Logged in successfully.',
+
+    // Details & Booking Flow
+    'details.capacity': 'Capacity',
+    'details.location': 'Location',
+    'details.features': 'Studio Features',
+    'details.bookThisSpace': 'Book This Space',
+    'details.selectDate': 'Select Date',
+    'details.selectTime': 'Select Time Slots',
+    'details.total': 'Total Estimated Cost',
+    'details.confirm': 'Proceed to Checkout',
+    'details.noGear': 'No gear sets added.',
+    'details.backToExploration': 'Back to Explorations',
+    'details.spaceAmenities': 'Space Amenities',
+    'details.includedGear': 'Included Gear',
+    'details.hourlyRate': 'Hourly Rate',
+    'details.perHr': '/ hr',
+    'details.rating': 'Rating',
+    'details.creators': 'creators',
+    'details.reserveSpace': 'Reserve Space',
+
+    // Booking Flow
+    'book.step1': 'Date & Time',
+    'book.step2': 'Equipment',
+    'book.step3': 'Confirm',
+    'book.step1Title': 'Schedule Your Session',
+    'book.selectDate': 'Select Date',
+    'book.startTime': 'Start Time',
+    'book.duration': 'Duration (Hours)',
+    'book.hoursCount': '{hours} Hours',
+    'book.continueToEquipment': 'Continue to Equipment Setup',
+    'book.step2Title': 'Add Equipment & Gear',
+    'book.step2Desc': 'Select any additional premium equipment for your session. Setup & tear-down are fully handled.',
+    'book.perSession': '+${price} / session',
+    'book.back': 'Back',
+    'book.confirmDetails': 'Confirm Booking Details',
+    'book.step3Title': 'Checkout & Secure Reservation',
+    'book.summaryTitle': 'Session Summary',
+    'book.summaryDate': 'Date',
+    'book.summaryTime': 'Start Time',
+    'book.summaryDuration': 'Duration',
+    'book.summaryAddons': 'Add-ons',
+    'book.summaryTotal': 'Total Estimated Cost',
+    'book.fullName': 'Full Name',
+    'book.emailAddress': 'Email Address',
+    'book.namePlaceholder': 'Enter your name',
+    'book.emailPlaceholder': 'Enter your email',
+    'book.reserveNow': 'Reserve Now',
+    'book.errorDateTime': 'Please choose an available date and time to continue.',
+    'book.warnNoEquipment': 'Proceeding without additional equipment add-ons.',
+    'book.errorContact': 'Please provide your contact details.',
+    'book.successMessage': 'Studio booking requested successfully! We sent a confirmation email.',
+
+    // Admin Panel
+    'admin.overview': 'Overview',
+    'admin.bookings': 'Bookings',
+    'admin.studios': 'Studios',
+    'admin.customers': 'Customers',
+    'admin.payments': 'Payments',
+    'admin.coupons': 'Coupons',
+    'admin.manageAvailability': 'Manage Booking Time',
+    'admin.makeAll': 'Make All Days Available',
+    'admin.blockAll': 'Block All Days',
+    'admin.save': 'Save Changes',
+    'admin.close': 'Close',
+    'admin.availabilityStatus': 'Availability calendar updated.',
+    'admin.activeBookings': 'Active Bookings',
+    'admin.revenueStream': 'Revenue Stream',
+    'admin.updatedHourly': 'Updated hourly',
+    'admin.avgUtilization': 'Average Utilization',
+    'admin.activeCustomers': 'Active Customers',
+    'admin.addStudio': 'Add Studio',
+    'admin.searchPlaceholder': 'Search customer, studio, id...',
+    'admin.bookingId': 'Booking ID',
+    'admin.customer': 'Customer',
+    'admin.studioSpace': 'Studio Space',
+    'admin.date': 'Date',
+    'admin.revenue': 'Revenue',
+    'admin.status': 'Status',
+    'admin.confirmed': 'Confirmed',
+    'admin.pending': 'Pending',
+
+    // Equipment Options
+    'eq.sony-fx3.name': 'Sony FX3 Cinema Camera Package',
+    'eq.sony-fx3.cat': 'Camera',
+    'eq.aputure-600d.name': 'Aputure 600d Pro Light Kit',
+    'eq.aputure-600d.cat': 'Lighting',
+    'eq.dji-rs3.name': 'DJI RS3 Pro Gimbal Stabilizer',
+    'eq.dji-rs3.cat': 'Grip',
+    'eq.rode-mic-pack.name': 'Wireless Go II Mic Kit (2 transmitters)',
+    'eq.rode-mic-pack.cat': 'Audio',
+
+    // Studios Data
+    'studio.1.name': 'The Velvet Room',
+    'studio.1.category': 'Photography',
+    'studio.1.desc': 'An elegant, velvet-draped photography environment featuring masterfully placed accent lights, a complete range of professional modifiers, and customizable backdrops.',
+    'studio.1.amenity.0': 'High-speed WiFi',
+    'studio.1.amenity.1': 'Air Conditioning',
+    'studio.1.amenity.2': 'Makeup Station',
+    'studio.1.amenity.3': 'Private Dressing Room',
+    'studio.1.amenity.4': 'Sound System',
+    'studio.1.eq.0': '3x Profoto D2 1000Ws',
+    'studio.1.eq.1': 'Various Softboxes & Modifiers',
+    'studio.1.eq.2': 'Manfrotto C-Stands',
+    'studio.1.eq.3': 'Paper Backdrops (Black, White, Grey)',
+
+    'studio.2.name': 'Lumière Stage A',
+    'studio.2.category': 'Video Production',
+    'studio.2.desc': 'Our flagship stage featuring a 30ft x 30ft infinity cyclorama wall, overhead lighting grid, and isolated silent HVAC for professional sound recording.',
+    'studio.2.amenity.0': '30x30ft Cyc Wall',
+    'studio.2.amenity.1': 'Overhead Grid',
+    'studio.2.amenity.2': 'Production Lounge',
+    'studio.2.amenity.3': 'Green Room',
+    'studio.2.amenity.4': 'Roll-up Load-in Door',
+    'studio.2.eq.0': 'ARRI Alexa Mini LF Package (Available for rent)',
+    'studio.2.eq.1': 'Aputure 600d & 300d lighting packages included',
+    'studio.2.eq.2': 'Heavy duty grip gear',
+
+    'studio.3.name': 'Echo Podcast Suite',
+    'studio.3.category': 'Podcast',
+    'studio.3.desc': 'Fully sound-treated studio optimized for high-end audio recording, multi-cam video podcasts, and live streaming.',
+    'studio.3.amenity.0': 'Acoustic Soundproofing',
+    'studio.3.amenity.1': 'Multi-cam setup support',
+    'studio.3.amenity.2': 'Beverage station',
+    'studio.3.amenity.3': 'High-speed Ethernet',
+    'studio.3.eq.0': '4x Shure SM7B Microphones',
+    'studio.3.eq.1': 'Rodecaster Pro II Console',
+    'studio.3.eq.2': 'Sony FX3 Camera setup (Optional add-on)',
+
+    // Dashboards
+    'dash.title': 'My Reservations',
+    'dash.newBooking': 'New Reservation',
+    'dash.studio': 'Studio',
+    'dash.date': 'Date',
+    'dash.time': 'Time',
+    'dash.status': 'Status',
+    'dash.pin': 'Access Pin',
+    'dash.actions': 'Actions',
+    'dash.cancel': 'Cancel Booking',
+    'dash.confirmed': 'Confirmed',
+    'dash.pending': 'Pending',
+    'dash.cancelled': 'Cancelled',
+    'dash.noBookings': 'No reservation records found.',
+
+    // Admin
+    'admin.title': 'Lumière Admin Panel',
+    'admin.totalRevenue': 'Total Revenue',
+    'admin.totalBookings': 'Total Bookings',
+    'admin.activeStudios': 'Active Studios',
+    'admin.bookingsTab': 'Reservations',
+    'admin.studiosTab': 'Manage Studios',
+    'admin.revenueTab': 'Revenue Overview',
+    'admin.studioName': 'Studio Name',
+    'admin.priceHour': 'Price/hr',
+    'admin.actions': 'Actions',
+    'admin.edit': 'Edit',
+    'admin.delete': 'Delete'
+  },
+  ar: {
+    // Navigation
+    'nav.studios': 'الاستوديوهات',
+    'nav.equipment': 'المعدات',
+    'nav.pricing': 'الأسعار',
+    'nav.faq': 'الأسئلة الشائعة',
+    'nav.signIn': 'تسجيل الدخول',
+    'nav.bookNow': 'احجز الآن',
+    'nav.theme': 'المظهر',
+    'nav.langToggle': 'English',
+
+    // Hero
+    'hero.badge': 'حجز سلس وسريع',
+    'hero.title': 'حيث يجد الإبداع الراقي مساحته',
+    'hero.desc': 'احجز استوديوهات فاخرة للتصوير الفوتوغرافي والسينمائي والتسجيل الصوتي مجهزة بأحدث التقنيات. مصممة خصيصاً للمبدعين المحترفين.',
+    'hero.primaryBtn': 'استكشف الاستوديوهات',
+    'hero.secondaryBtn': 'تعرف علينا',
+
+    // Why Choose Us
+    'why.title1': 'ارتقِ بمستوى',
+    'why.title2': 'إنتاجك الفني',
+    'why.desc': 'نحن نقدم لك ما هو أكثر بكثير من مجرد مساحة تصوير. توفر لوميير منظومة متكاملة من الاستوديوهات الفاخرة المجهزة بأحدث التقنيات العالمية، والمصممة خصيصاً لتجسيد رؤيتك الإبداعية الأكثر طموحاً على أرض الواقع.',
+    'why.statBookings': 'حجوزات مكتملة',
+    'why.statStudios': 'استوديوهات فاخرة',
+    'why.statRating': 'متوسط التقييم',
+    'why.statSatisfaction': 'نسبة رضا العملاء',
+
+    // Categories
+    'cat.browseTitle': 'تصفح حسب الفئة',
+    'cat.browseDesc': 'ابحث عن المساحة المثالية المصممة خصيصاً لتناسب احتياجات إنتاجك الفني.',
+    'cat.photography': 'التصوير الفوتوغرافي',
+    'cat.photographyDesc': 'التحرير والأزياء',
+    'cat.video': 'الإنتاج السينمائي والـ Video',
+    'cat.videoDesc': 'الإعلانات والأفلام',
+    'cat.podcast': 'البودكاست والصوتيات',
+    'cat.podcastDesc': 'الصوت والمقابلات',
+    'cat.cyclorama': 'سايكلو راما',
+    'cat.cycloramaDesc': 'جدران لا نهائية',
+    'cat.content': 'صناعة المحتوى',
+    'cat.contentDesc': 'وسائل التواصل الاجتماعي',
+    'cat.sets': 'مواقع تجارية',
+    'cat.setsDesc': 'بيئات مبنية مسبقاً',
+    'cat.music': 'تسجيل الموسيقى',
+    'cat.musicDesc': 'هندسة الصوت',
+    'cat.creative': 'مساحات إبداعية',
+    'cat.creativeDesc': 'الاجتماعات والفعاليات',
+
+    // Featured Studios
+    'featured.title': 'المساحات المتميزة',
+    'featured.desc': 'بيئات إنتاج منسقة بعناية ومصممة للمبدعين الذين لا يقبلون بأنصاف الحلول.',
+    'featured.viewAll': 'عرض جميع الاستوديوهات',
+    'featured.available': 'متاح اليوم',
+    'featured.booked': 'محجوز',
+    'featured.capacity': 'حتى {capacity} شخص',
+    'featured.hour': 'ساعة',
+    'featured.bookNowPrice': 'احجز الآن - {price}$/ساعة',
+
+    // How It Works
+    'how.badge': 'حجز سلس وسهل',
+    'how.title': 'كيف تعمل لوميير؟',
+    'how.desc': 'تجربة حجز انسيابية وخالية من التعقيد مصممة خصيصًا للمحترفين المبدعين ذوي الإنتاجية العالية.',
+    'how.step1Title': 'استكشف واختر',
+    'how.step1Desc': 'تصفح كتالوجنا المنسق للاستوديوهات الفاخرة المجهزة بديكورات ومقاسات متباينة تلائم مختلف الرؤى الفنية.',
+    'how.step2Title': 'حدد المعدات والجدول',
+    'how.step2Desc': 'اختر موعدك في التقويم، واختر باقات تأجير المعدات الفاخرة (كاميرات RED، إضاءة احترافية، حزم الصوت)، والألوان المفضلة لديك.',
+    'how.step3Title': 'دخول فوري ومباشر',
+    'how.step3Desc': 'أكمل الدفع بأمان. ستتلقى تأكيداً فورياً عبر البريد الإلكتروني، والفاتورة، ورموز الدخول الرقمية للبوابة الذكية والاستوديو.',
+
+    // Equipment
+    'eq.badge': 'معدات إنتاج فني راقية',
+    'eq.title': 'المعدات المتاحة للتأجير',
+    'eq.desc': 'أضف معدات تصوير سينمائي راقية لحجزك مباشرةً، دون عناء نقل أجهزتك الثقيلة بفضل ترسانة معداتنا المتوفرة في الموقع.',
+    'eq.all': 'كل المعدات',
+    'eq.cameras': 'الكاميرات والعدسات',
+    'eq.lighting': 'الإضاءة والمعدات المساندة',
+    'eq.audio': 'الصوت والتسجيل',
+    'eq.day': 'يوم',
+    'eq.addToBooking': 'أضف للحجز',
+    'eq.added': 'تمت الإضافة',
+    'eq.item.1.name': 'كاميرا RED V-Raptor 8K VV',
+    'eq.item.1.desc': 'كاميرا سينمائية فائقة الدقة لإنتاج الفيديو بأعلى جودة واحترافية.',
+    'eq.item.2.name': 'إضاءة Aputure LS 600d Pro',
+    'eq.item.2.desc': 'منظومة إضاءة LED نقطية احترافية متوازنة مع ضوء النهار.',
+    'eq.item.3.name': 'ميكروفون Shure SM7B Vocal Mic',
+    'eq.item.3.desc': 'ميكروفون ديناميكي قياسي ومثالي للبث الصوتي والبودكاست.',
+    'eq.item.4.name': 'كاميرا Sony FX3 Cinema Line',
+    'eq.item.4.desc': 'كاميرا سينمائية مدمجة كاملة الإطار لتصوير الأفلام والوثائقيات المرنة.',
+    'eq.item.5.name': 'فلاش Profoto D2 Studio Flash',
+    'eq.item.5.desc': 'إضاءة فلاش فوتوغرافي سريعة جداً ومثالية لتصوير الأزياء والأزياء الراقية.',
+    'eq.item.6.name': 'ميكروفون Sennheiser MKH416',
+    'eq.item.6.desc': 'ميكروفون بندقية مكثف RF فائق الجودة للتسجيل الخارجي النقي.',
+
+    // Pricing
+    'pricing.badge': 'أسعار شفافة',
+    'pricing.title': 'اختر خطة الإنتاج المناسبة لك',
+    'pricing.desc': 'لا توجد أي رسوم مخفية. احجز مساحات إبداعية راقية بأسعار بسيطة ومباشرة.',
+    'pricing.popular': 'الأكثر شعبية',
+    // Hourly
+    'pricing.plan1Name': 'الإيجار بالساعة',
+    'pricing.plan1Price': '١٥٠',
+    'pricing.plan1Period': 'ساعة',
+    'pricing.plan1Desc': 'مثالي لجلسات التصوير السريعة، تصوير المنتجات، أو تسجيل البودكاست.',
+    'pricing.plan1F1': 'الحد الأدنى للحجز: ساعتان',
+    'pricing.plan1F2': 'معدات إضاءة قياسية مشمولة',
+    'pricing.plan1F3': 'إنترنت فائق السرعة وغرف تبديل الملابس',
+    'pricing.plan1F4': 'مساعدة في إعداد الخلفيات القياسية',
+    'pricing.plan1F5': 'دخول مجاني للغرفة الخضراء / الصالة الأساسية',
+    'pricing.plan1Cta': 'حجز بالساعة',
+    // Half-Day
+    'pricing.plan2Name': 'بطاقة نصف يوم',
+    'pricing.plan2Price': '٥٥٠',
+    'pricing.plan2Period': '٤ ساعات',
+    'pricing.plan2Desc': 'مناسب لجلسات تصوير كتيبات الموضة، الإعلانات التجارية، وصناع المحتوى.',
+    'pricing.plan2F1': 'دخول مخصص للاستوديو لمدة ٤ ساعات',
+    'pricing.plan2F2': 'مجموعة إضاءة فاخرة (Aputure / Profoto)',
+    'pricing.plan2F3': 'تجهيز خلفية سايكلو راما واحدة بلون مخصص',
+    'pricing.plan2F4': 'مساعد استوديو مخصص',
+    'pricing.plan2F5': 'دخول صالة كبار الشخصيات مع المشروبات مجاناً',
+    'pricing.plan2Cta': 'حجز نصف يوم',
+    // Full-Day
+    'pricing.plan3Name': 'تجربة اليوم الكامل',
+    'pricing.plan3Price': '٩٥٠',
+    'pricing.plan3Period': '٨ ساعات',
+    'pricing.plan3Desc': 'حزمة الإنتاج المتكاملة للحملات واسعة النطاق، ومقاطع الفيديو الموسيقية، والأفلام.',
+    'pricing.plan3F1': 'دخول مخصص للاستوديو لمدة ٨ ساعات',
+    'pricing.plan3F2': 'دخول كامل لجميع ترسانة المعدات المتاحة',
+    'pricing.plan3F3': 'تغيير غير محدود لألوان السايكلو راما',
+    'pricing.plan3F4': 'مهندس صوت / فني متواجد طوال اليوم',
+    'pricing.plan3F5': 'دخول الغرفة الخضراء الفاخرة، تقديم الضيافة، وجناح المونتاج',
+    'pricing.plan3Cta': 'حجز يوم كامل',
+
+    // FAQs
+    'faq.badge': 'هل لديك أسئلة؟',
+    'faq.title': 'الأسئلة الشائعة',
+    'faq.desc': 'كل ما تحتاج إلى معرفته للتحضير لجلستك الإبداعية في استوديوهات لوميير.',
+    'faq.q1': 'كيف يمكنني تسجيل الدخول والوصول إلى الاستوديو؟',
+    'faq.a1': 'بمجرد تأكيد حجزك، ستتلقى رمز دخول رقمي آمن عبر البريد الإلكتروني والرسائل النصية القصيرة قبل ساعتين من موعد جلستك. كما سيكون منسق الاستوديو متواجداً في الموقع لاستقبالك وتسليمك المفاتيح ومساعدتك في البدء.',
+    'faq.q2': 'ما هي سياسة الإلغاء وإعادة الجدولة لديكم؟',
+    'faq.a2': 'يمكنك إعادة جدولة الحجز أو إلغاؤه واسترداد المبلغ كاملاً قبل ٤٨ ساعة من موعد جلستك المحددة. الحجوزات الملغاة بين ٢٤ إلى ٤٨ ساعة ستحصل على رصيد استوديو بنسبة ٥٠٪، والإلغاء بأقل من ٢٤ ساعة غير قابل للاسترداد.',
+    'faq.q3': 'هل يمكنني استئجار معدات إضافية في يوم الإنتاج؟',
+    'faq.a3': 'نعم! على الرغم من أننا نوصي بحجز المعدات الأساسية مسبقاً أثناء إنهاء حجزك، يمكنك استئجار أي كاميرات أو عدسات أو معدات إضاءة أو صوت متاحة في المخزون بالموقع في نفس اليوم. ويمكن معالجة المدفوعات فوراً في الاستقبال.',
+    'faq.q4': 'هل الاستوديوهات معزولة الصوت؟',
+    'faq.a4': 'استوديو Stage A وجناح Echo Podcast معالجان صوتياً بالكامل ومعزولان تماماً، ومصممان خصيصاً لتسجيل الحوارات الفيديوية النقية والبودكاست بمعايير البث العالمية. أما غرفة Velvet Room (للتصوير الفوتوغرافي) فهي معزولة جزئياً ولكنها ليست كاتمة تماماً للصوت.',
+    'faq.q5': 'هل تتوفر مواقف سيارات في الموقع؟',
+    'faq.a5': 'نعم، نحن نوفر ٣ مواقف مخصصة للسيارات لكل استوديو محجوز في موقفنا الخاص والآمن، بالإضافة إلى توفر مواقف إضافية في الشارع وأرصفة تحميل لتسهيل إنزال المعدات الثقيلة.',
+
+    // Testimonials
+    'test.badge': 'نجاح عملائنا',
+    'test.title': 'أصوات عملائنا',
+    'test.desc': 'لا تكتفِ بسماع كلمتنا فقط. استمع إلى قصص وتجارب المبدعين الذين يثقون بنا.',
+    'test.item1Quote': 'لقد غيرت لوميير تماماً من سير عمل الإنتاج لدينا. إن الاهتمام بالتفاصيل في مساحاتهم لا مثيل له. تشعر كأنك لا تستأجر استوديو فحسب، بل تدخل في تحفة سينمائية.',
+    'test.item1Name': 'إيلينا رودريغيز',
+    'test.item1Role': 'المدير الإبداعي، مجلة فوغ (Vogue)',
+    'test.item2Quote': 'معدات الإضاءة والمعالجة الصوتية في استوديو (Stage A) كانت مذهلة بحق. لقد قمنا بتصوير حملتنا الإعلانية بالكامل هنا دون أي عقبة فنية واحدة. محترفون حقيقيون.',
+    'test.item2Name': 'ماركوس تشين',
+    'test.item2Role': 'مدير تصوير سينمائي',
+    'test.item3Quote': 'بصفتي صانعة محتوى بودكاست، فإن جناح Echo Suite هو حلم تحقق. المظهر رائع جداً، وجودة الصوت نقية للغاية. ضيوفي دائماً يعلقون على مدى فخامة التجربة.',
+    'test.item3Name': 'سارة جنكينز',
+    'test.item3Role': 'مقدمة بودكاست، ذا ديلي تيك',
+    'test.item4Quote': 'العثور على جدار سايكلو راما موثوق وراقٍ في المدينة أمر صعب. لقد تجاوزت لوميير كل توقعاتنا بمرافقها المتميزة وتأجير المعدات وخدمتها الممتازة الخالية من العيوب.',
+    'test.item4Name': 'ديفيد رايت',
+    'test.item4Role': 'مصور أزياء محترف',
+
+    // Footer
+    'footer.slogan': 'مساحات تصوير فوتوغرافي وسينمائي وتسجيل صوتي فاخرة صممت للمبدعين المحترفين.',
+    'footer.rights': 'جميع الحقوق محفوظة.',
+    'footer.newsletter': 'اشترك في نشرتنا البريدية',
+    'footer.newsDesc': 'احصل على آخر التحديثات حول التجهيزات الموسمية وحجوزات المعدات الجديدة.',
+    'footer.emailPlaceholder': 'بريدك الإلكتروني',
+    'footer.subscribe': 'اشترك الآن',
+    'footer.linksLabel': 'روابط سريعة',
+    'footer.legalLabel': 'القانونية',
+    'footer.legalPrivacy': 'سياسة الخصوصية',
+    'footer.legalTerms': 'شروط الخدمة',
+    'footer.studios': 'الاستوديوهات',
+    'footer.company': 'الشركة',
+
+    // Login & Forms
+    'login.title': 'مرحباً بعودتك',
+    'login.desc': 'قم بتسجيل الدخول للوصول لحجوزاتك ورموز الدخول الذكي للبوابات.',
+    'login.email': 'البريد الإلكتروني',
+    'login.password': 'كلمة المرور',
+    'login.signInBtn': 'تسجيل الدخول',
+    'login.forgot': 'هل نسيت كلمة المرور؟',
+    'login.noAccount': 'ليس لديك حساب؟',
+    'login.signUp': 'سجل الآن مجاناً',
+    'login.tipAdmin': 'نصيحة: قم بتسجيل الدخول باستخدام البريد admin@lumiere.com لعرض لوحة تحكم المسؤول.',
+    'login.errorFill': 'يرجى ملء جميع الحقول المطلوبة.',
+    'login.successAdmin': 'مرحباً بعودتك، أيها المسؤول.',
+    'login.successUser': 'تم تسجيل الدخول بنجاح.',
+
+    // Details & Booking Flow
+    'details.capacity': 'القدرة الاستيعابية',
+    'details.location': 'الموقع الجغرافي',
+    'details.features': 'مزايا وتجهيزات الاستوديو',
+    'details.bookThisSpace': 'احجز هذه المساحة الإبداعية',
+    'details.selectDate': 'اختر التاريخ واليوم',
+    'details.selectTime': 'اختر الفترات الزمنية المتاحة',
+    'details.total': 'التكلفة الإجمالية المقدرة',
+    'details.confirm': 'الذهاب لصفحة الدفع والدفع',
+    'details.noGear': 'لم يتم إضافة معدات إضافية.',
+    'details.backToExploration': 'العودة للاستكشاف',
+    'details.spaceAmenities': 'مرافق ومميزات المساحة',
+    'details.includedGear': 'المعدات والأدوات المشمولة',
+    'details.hourlyRate': 'السعر بالساعة',
+    'details.perHr': '/ ساعة',
+    'details.rating': 'التقييم',
+    'details.creators': 'مبدعين',
+    'details.reserveSpace': 'حجز هذه المساحة',
+
+    // Booking Flow
+    'book.step1': 'التاريخ والوقت',
+    'book.step2': 'المعدات والملحقات',
+    'book.step3': 'تأكيد الحجز',
+    'book.step1Title': 'جدولة جلستك الإبداعية',
+    'book.selectDate': 'اختر تاريخ الحجز',
+    'book.startTime': 'وقت البدء',
+    'book.duration': 'المدة (ساعات)',
+    'book.hoursCount': '{hours} ساعات',
+    'book.continueToEquipment': 'المتابعة لتحديد المعدات',
+    'book.step2Title': 'إضافة المعدات والأدوات الإضافية',
+    'book.step2Desc': 'اختر أي معدات إضافية مميزة لجلستك. التجهيز والترتيب بعد الجلسة يتم إدارتها بالكامل من قبل فريقنا.',
+    'book.perSession': '+ {price} دولار / الجلسة',
+    'book.back': 'رجوع',
+    'book.confirmDetails': 'تأكيد تفاصيل الحجز',
+    'book.step3Title': 'تأكيد الدفع وحجز المساحة',
+    'book.summaryTitle': 'ملخص الجلسة',
+    'book.summaryDate': 'التاريخ',
+    'book.summaryTime': 'وقت البدء',
+    'book.summaryDuration': 'المدة',
+    'book.summaryAddons': 'الترقيات والمعدات الإضافية',
+    'book.summaryTotal': 'التكلفة الإجمالية المقدرة',
+    'book.fullName': 'الاسم الكامل',
+    'book.emailAddress': 'البريد الإلكتروني',
+    'book.namePlaceholder': 'أدخل اسمك بالكامل',
+    'book.emailPlaceholder': 'أدخل بريدك الإلكتروني',
+    'book.reserveNow': 'احجز الآن',
+    'book.errorDateTime': 'يرجى اختيار تاريخ ووقت متاحين للمتابعة.',
+    'book.warnNoEquipment': 'المتابعة بدون إضافة معدات اختيارية.',
+    'book.errorContact': 'يرجى إدخال بيانات الاتصال الخاصة بك.',
+    'book.successMessage': 'تم تقديم طلب حجز الاستوديو بنجاح! تم إرسال بريد إلكتروني للتأكيد.',
+
+    // Admin Panel
+    'admin.overview': 'نظرة عامة',
+    'admin.bookings': 'الحجوزات',
+    'admin.studios': 'الاستوديوهات',
+    'admin.customers': 'العملاء',
+    'admin.payments': 'المدفوعات',
+    'admin.coupons': 'الكوبونات',
+    'admin.manageAvailability': 'إدارة وقت الحجز',
+    'admin.makeAll': 'إتاحة جميع الأيام',
+    'admin.blockAll': 'تعطيل جميع الأيام',
+    'admin.save': 'حفظ التعديلات',
+    'admin.close': 'إغلاق',
+    'admin.availabilityStatus': 'تم تحديث جدول التوافر بنجاح.',
+    'admin.activeBookings': 'الحجوزات النشطة',
+    'admin.revenueStream': 'مجرى الإيرادات',
+    'admin.updatedHourly': 'يتم التحديث كل ساعة',
+    'admin.avgUtilization': 'معدل الاستخدام المتوسط',
+    'admin.activeCustomers': 'العملاء النشطون',
+    'admin.addStudio': 'إضافة استوديو',
+    'admin.searchPlaceholder': 'بحث باسم العميل، الاستوديو، الرقم...',
+    'admin.bookingId': 'رقم الحجز',
+    'admin.customer': 'العميل',
+    'admin.studioSpace': 'مساحة الاستوديو',
+    'admin.date': 'التاريخ',
+    'admin.revenue': 'الإيرادات',
+    'admin.status': 'الحالة',
+    'admin.confirmed': 'مؤكد',
+    'admin.pending': 'قيد الانتظار',
+
+    // Equipment Options
+    'eq.sony-fx3.name': 'حزمة كاميرا سينما سوني FX3',
+    'eq.sony-fx3.cat': 'كاميرات',
+    'eq.aputure-600d.name': 'حزمة إضاءة Aputure 600d Pro',
+    'eq.aputure-600d.cat': 'إضاءة',
+    'eq.dji-rs3.name': 'مانع اهتزاز DJI RS3 Pro',
+    'eq.dji-rs3.cat': 'حوامل ومثبتات',
+    'eq.rode-mic-pack.name': 'حزمة ميكروفون لاسلكي Wireless Go II',
+    'eq.rode-mic-pack.cat': 'صوتيات',
+
+    // Studios Data
+    'studio.1.name': 'غرفة المخمل (The Velvet Room)',
+    'studio.1.category': 'التصوير الفوتوغرافي',
+    'studio.1.desc': 'بيئة تصوير فوتوغرافي أنيقة مغطاة بالمخمل، تتميز بإضاءة مخصصة وموزعة ببراعة، ومجموعة متكاملة من أدوات تعديل الضوء، وخلفيات قابلة للتخصيص.',
+    'studio.1.amenity.0': 'إنترنت فائق السرعة',
+    'studio.1.amenity.1': 'تكييف هواء صامت',
+    'studio.1.amenity.2': 'ركن للمكياج وتجهيز الموديل',
+    'studio.1.amenity.3': 'غرفة تبديل ملابس خاصة',
+    'studio.1.amenity.4': 'نظام صوتي متكامل',
+    'studio.1.eq.0': '٣ وحدات فلاش Profoto D2 بقوة 1000 واط',
+    'studio.1.eq.1': 'مجموعة متنوعة من المشتتات والـ Softboxes',
+    'studio.1.eq.2': 'حوامل إضاءة احترافية من Manfrotto C-Stands',
+    'studio.1.eq.3': 'خلفيات ورقية ملونة (أسود، أبيض، رمادي)',
+
+    'studio.2.name': 'مسرح لوميير أ (Lumière Stage A)',
+    'studio.2.category': 'الإنتاج السينمائي والمرئي',
+    'studio.2.desc': 'استوديو الإنتاج المرئي الرئيسي لدينا، بمساحة 30 × 30 قدم مع جدار سايكلو راما لانهاية، وشبكة إضاءة علوية معلقة، ونظام تكييف صامت معزول للتسجيل الصوتي المحترف.',
+    'studio.2.amenity.0': 'جدار سايكلو راما 30 × 30 قدم',
+    'studio.2.amenity.1': 'شبكة إضاءة علوية معلقة',
+    'studio.2.amenity.2': 'صالة إنتاج مخصصة للعملاء',
+    'studio.2.amenity.3': 'الغرفة الخضراء للممثلين',
+    'studio.2.amenity.4': 'بوابة منزلقة مخصصة لإدخال المعدات الثقيلة',
+    'studio.2.eq.0': 'حزمة كاميرا ARRI Alexa Mini LF (متاحة للتأجير الإضافي)',
+    'studio.2.eq.1': 'حزم إضاءة Aputure 600d و 300d مشمولة بالكامل',
+    'studio.2.eq.2': 'معدات تثبيت وحوامل شديدة التحمل',
+
+    'studio.3.name': 'جناح بودكاست إيكو (Echo Podcast Suite)',
+    'studio.3.category': 'البودكاست والصوتيات',
+    'studio.3.desc': 'استوديو معالج ومحمي صوتياً بالكامل، ومصمم لتسجيل البث الصوتي الراقي والبودكاست المرئي متعدد الكاميرات والبث المباشر.',
+    'studio.3.amenity.0': 'عزل ومعالجة صوتية احترافية',
+    'studio.3.amenity.1': 'دعم التصوير والربط متعدد الكاميرات',
+    'studio.3.amenity.2': 'ركن لتحضير المشروبات والضيافة',
+    'studio.3.amenity.3': 'اتصال إنترنت فائق السرعة عبر الكيبل',
+    'studio.3.eq.0': '٤ ميكروفونات Shure SM7B للمحاورين',
+    'studio.3.eq.1': 'جهاز التحكم الصوتي المتكامل Rodecaster Pro II',
+    'studio.3.eq.2': 'منظومة كاميرا Sony FX3 (حزمة اختيارية إضافية)',
+
+    // Dashboards
+    'dash.title': 'حجوزاتي الحالية والسابقة',
+    'dash.newBooking': 'حجز جديد ومباشر',
+    'dash.studio': 'الاستوديو',
+    'dash.date': 'التاريخ',
+    'dash.time': 'الوقت',
+    'dash.status': 'الحالة',
+    'dash.pin': 'رمز الدخول الذكي',
+    'dash.actions': 'الإجراءات',
+    'dash.cancel': 'إلغاء هذا الحجز',
+    'dash.confirmed': 'مؤكد ومقبول',
+    'dash.pending': 'تحت المعالجة',
+    'dash.cancelled': 'ملغى ومسترجع',
+    'dash.noBookings': 'لا توجد سجلات حجز مسجلة حالياً.',
+
+    // Admin
+    'admin.title': 'لوحة تحكم لوميير للإدارة',
+    'admin.totalRevenue': 'إجمالي الإيرادات',
+    'admin.totalBookings': 'إجمالي الحجوزات',
+    'admin.activeStudios': 'الاستوديوهات النشطة',
+    'admin.bookingsTab': 'الحجوزات والعملاء',
+    'admin.studiosTab': 'إدارة الاستوديوهات',
+    'admin.revenueTab': 'مؤشرات الإيرادات',
+    'admin.studioName': 'اسم الاستوديو',
+    'admin.priceHour': 'السعر/ساعة',
+    'admin.actions': 'الإجراءات',
+    'admin.edit': 'تعديل',
+    'admin.delete': 'حذف'
+  }
+}
+
+const LanguageContext = createContext<LanguageContextProps | undefined>(undefined)
+
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [language, setLanguageState] = useState<Language>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('language')
+      if (saved === 'ar' || saved === 'en') return saved
+      // Detect system preference
+      const browserLang = navigator.language.slice(0, 2)
+      return browserLang === 'ar' ? 'ar' : 'en'
+    }
+    return 'en'
+  })
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('language', language)
+      
+      const root = document.documentElement
+      root.lang = language
+      root.dir = language === 'ar' ? 'rtl' : 'ltr'
+    }
+  }, [language])
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang)
+  }
+
+  const t = (key: string): string => {
+    const dict = translations[language] as Record<string, string>
+    return dict[key] || translations['en'][key as keyof typeof translations['en']] || key
+  }
+
+  const isRtl = language === 'ar'
+
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, t, isRtl }}>
+      {children}
+    </LanguageContext.Provider>
+  )
+}
+
+export const useLanguage = () => {
+  const context = useContext(LanguageContext)
+  if (!context) {
+    throw new Error('useLanguage must be used within a LanguageProvider')
+  }
+  return context
+}
