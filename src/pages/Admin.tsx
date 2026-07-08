@@ -9,7 +9,6 @@ import {
   Calendar as CalendarIcon, 
   Search, 
   Plus, 
-  Filter, 
   X, 
   ChevronLeft, 
   ChevronRight, 
@@ -25,9 +24,9 @@ import {
   toggleDateAvailability, 
   formatDate,
   getStudios,
-  saveStudios,
-  Studio
+  saveStudios
 } from '../lib/availability'
+import type { Studio } from '../lib/availability'
 import { Button } from '../components/ui/button'
 
 const MONTH_NAMES = {
