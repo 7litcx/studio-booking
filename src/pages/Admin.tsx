@@ -814,7 +814,7 @@ export default function Admin() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white border border-zinc-200 text-zinc-900 p-6 space-y-5 shadow-2xl"
+              className="relative w-full max-w-md overflow-hidden rounded-3xl bg-[#ffffff] border border-zinc-200 text-zinc-900 p-6 space-y-5 shadow-2xl"
             >
               {/* Header */}
               <div className="flex items-center justify-between">
@@ -936,7 +936,7 @@ export default function Admin() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white border border-zinc-200 text-zinc-900 p-6 md:p-8 space-y-6 shadow-2xl"
+              className="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-[#ffffff] border border-zinc-200 text-zinc-900 p-6 md:p-8 space-y-6 shadow-2xl"
             >
               {/* Header */}
               <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
@@ -1258,7 +1258,7 @@ export default function Admin() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white border border-zinc-200 text-zinc-900 p-6 md:p-8 space-y-6 shadow-2xl"
+              className="relative w-full max-w-md overflow-hidden rounded-3xl bg-[#ffffff] border border-zinc-200 text-zinc-900 p-6 md:p-8 space-y-6 shadow-2xl"
             >
               <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
                 <h3 className="text-xl font-cinematic font-bold text-zinc-900">
