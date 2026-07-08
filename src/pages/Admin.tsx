@@ -65,13 +65,32 @@ export default function Admin() {
   const [studioDescAr, setStudioDescAr] = useState('')
   const [studioPrice, setStudioPrice] = useState(100)
   const [studioCapacity, setStudioCapacity] = useState(15)
-  const [imagesText, setImagesText] = useState('')
   const [amenitiesText, setAmenitiesText] = useState('')
   const [amenitiesArText, setAmenitiesArText] = useState('')
   const [equipmentText, setEquipmentText] = useState('')
   const [equipmentArText, setEquipmentArText] = useState('')
   
   const [modalSubTab, setModalSubTab] = useState<'basic' | 'media' | 'details'>('basic')
+  const [uploadedImages, setUploadedImages] = useState<string[]>([])
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+    
+    Array.from(files).forEach(file => {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setUploadedImages(prev => [...prev, reader.result as string])
+        }
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const handleRemoveImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index))
+  }
 
   // Customers state
   const [customers, setCustomers] = useState([
@@ -157,7 +176,7 @@ export default function Admin() {
     setStudioDescAr('')
     setStudioPrice(100)
     setStudioCapacity(15)
-    setImagesText('')
+    setUploadedImages([])
     setAmenitiesText('')
     setAmenitiesArText('')
     setEquipmentText('')
@@ -176,7 +195,7 @@ export default function Admin() {
     setStudioDescAr(studio.descAr || '')
     setStudioPrice(studio.price)
     setStudioCapacity(studio.capacity || 15)
-    setImagesText((studio.images || []).join('\n'))
+    setUploadedImages(studio.images || [])
     setAmenitiesText((studio.amenities || []).join('\n'))
     setAmenitiesArText((studio.amenitiesAr || []).join('\n'))
     setEquipmentText((studio.equipment || []).join('\n'))
@@ -197,11 +216,14 @@ export default function Admin() {
     e.preventDefault()
     if (!studioName.trim()) return
 
-    const parsedImages = imagesText.split('\n').map(l => l.trim()).filter(Boolean)
     const parsedAmenities = amenitiesText.split('\n').map(l => l.trim()).filter(Boolean)
     const parsedAmenitiesAr = amenitiesArText.split('\n').map(l => l.trim()).filter(Boolean)
     const parsedEquipment = equipmentText.split('\n').map(l => l.trim()).filter(Boolean)
     const parsedEquipmentAr = equipmentArText.split('\n').map(l => l.trim()).filter(Boolean)
+
+    const finalImages = uploadedImages.length > 0 ? uploadedImages : [
+      "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2070&auto=format&fit=crop"
+    ]
 
     if (editingStudio) {
       // Edit mode
@@ -215,7 +237,7 @@ export default function Admin() {
         descAr: studioDescAr,
         price: Number(studioPrice),
         capacity: Number(studioCapacity),
-        images: parsedImages.length > 0 ? parsedImages : s.images,
+        images: finalImages,
         amenities: parsedAmenities,
         amenitiesAr: parsedAmenitiesAr,
         equipment: parsedEquipment,
@@ -236,9 +258,7 @@ export default function Admin() {
         price: Number(studioPrice),
         capacity: Number(studioCapacity),
         rating: 5.0,
-        images: parsedImages.length > 0 ? parsedImages : [
-          "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2070&auto=format&fit=crop"
-        ],
+        images: finalImages,
         amenities: parsedAmenities,
         amenitiesAr: parsedAmenitiesAr,
         equipment: parsedEquipment,
@@ -794,12 +814,12 @@ export default function Admin() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl overflow-hidden rounded-3xl glass border border-border bg-background p-6 md:p-8 space-y-6 shadow-2xl"
+              className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white border border-zinc-200 text-zinc-900 p-6 space-y-5 shadow-2xl"
             >
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-2xl font-cinematic font-bold text-foreground">
+                  <h3 className="text-xl font-cinematic font-bold text-zinc-900">
                     {t('admin.manageAvailability')}
                   </h3>
                   <p className="text-sm text-primary font-semibold mt-1">
@@ -808,20 +828,20 @@ export default function Admin() {
                 </div>
                 <button 
                   onClick={() => setSelectedStudioForAvailability(null)}
-                  className="p-2 rounded-full hover:bg-foreground/5 transition-colors cursor-pointer"
+                  className="p-2 rounded-full hover:bg-zinc-100 transition-colors cursor-pointer"
                 >
-                  <X className="w-5 h-5 text-muted-foreground hover:text-foreground" />
+                  <X className="w-5 h-5 text-zinc-400 hover:text-zinc-700" />
                 </button>
               </div>
 
               {/* Status Legend */}
-              <div className="flex items-center justify-start gap-6 bg-foreground/[0.02] border border-border/50 p-4 rounded-2xl text-xs font-medium text-muted-foreground">
+              <div className="flex items-center justify-start gap-6 bg-zinc-50 border border-zinc-100 p-4 rounded-2xl text-xs font-medium text-zinc-500">
                 <span className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/40 shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
+                  <span className="w-3 h-3 rounded-full bg-emerald-100 border border-emerald-300" />
                   {language === 'ar' ? '🟢 متاح للحجز' : '🟢 Available for Booking'}
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-rose-500/20 border border-rose-500/40" />
+                  <span className="w-3 h-3 rounded-full bg-rose-100 border border-rose-300" />
                   {language === 'ar' ? '🔴 مغلق ومغلق للصيانة' : '🔴 Closed / Blocked'}
                 </span>
               </div>
@@ -830,14 +850,14 @@ export default function Admin() {
               <div className="flex gap-3">
                 <Button 
                   onClick={handleMakeAllAvailable}
-                  className="flex-1 text-xs md:text-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 rounded-full h-11 flex items-center justify-center gap-2 cursor-pointer font-semibold"
+                  className="flex-1 text-xs bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 rounded-full h-10 flex items-center justify-center gap-2 cursor-pointer font-semibold"
                 >
                   <CheckCircle className="w-4 h-4" />
                   {t('admin.makeAll')}
                 </Button>
                 <Button 
                   onClick={handleBlockAllDays}
-                  className="flex-1 text-xs md:text-sm bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 rounded-full h-11 flex items-center justify-center gap-2 cursor-pointer font-semibold"
+                  className="flex-1 text-xs bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 rounded-full h-10 flex items-center justify-center gap-2 cursor-pointer font-semibold"
                 >
                   <AlertCircle className="w-4 h-4" />
                   {t('admin.blockAll')}
@@ -845,14 +865,14 @@ export default function Admin() {
               </div>
 
               {/* Month Navigation */}
-              <div className="flex items-center justify-between border-t border-b border-border py-4">
-                <button onClick={handlePrevMonth} className="p-2 rounded-full hover:bg-foreground/5 cursor-pointer">
+              <div className="flex items-center justify-between border-t border-b border-zinc-100 py-3">
+                <button onClick={handlePrevMonth} className="p-2 rounded-full hover:bg-zinc-100 text-zinc-600 cursor-pointer">
                   <ChevronLeft className={`w-5 h-5 ${language === 'ar' ? 'rotate-180' : ''}`} />
                 </button>
-                <span className="font-bold text-foreground font-cinematic text-lg">
+                <span className="font-bold text-zinc-800 font-cinematic text-base">
                   {MONTH_NAMES[language as 'en' | 'ar'][currentMonth]} {currentYear}
                 </span>
-                <button onClick={handleNextMonth} className="p-2 rounded-full hover:bg-foreground/5 cursor-pointer">
+                <button onClick={handleNextMonth} className="p-2 rounded-full hover:bg-zinc-100 text-zinc-600 cursor-pointer">
                   <ChevronRight className={`w-5 h-5 ${language === 'ar' ? 'rotate-180' : ''}`} />
                 </button>
               </div>
@@ -860,7 +880,7 @@ export default function Admin() {
               {/* Calendar Grid */}
               <div className="grid grid-cols-7 gap-3 text-center text-xs">
                 {WEEKDAY_NAMES[language as 'en' | 'ar'].map((day) => (
-                  <span key={day} className="text-muted-foreground font-bold py-1">
+                  <span key={day} className="text-zinc-400 font-bold py-1">
                     {day}
                   </span>
                 ))}
@@ -879,14 +899,14 @@ export default function Admin() {
                       onClick={() => handleToggleDay(dayData)}
                       className={`group aspect-square rounded-2xl font-bold flex flex-col items-center justify-center border transition-all duration-300 relative overflow-hidden cursor-pointer ${
                         isAvailable 
-                          ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)] hover:bg-emerald-500/20' 
-                          : 'bg-rose-500/5 border-rose-500/20 text-rose-500/60 dark:text-rose-400/50 hover:bg-rose-500/10'
+                          ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' 
+                          : 'bg-rose-50/50 border-rose-100 text-rose-400 hover:bg-rose-50'
                       }`}
                     >
                       <span className="text-base font-cinematic font-bold">{dayNum}</span>
-                      <span className={`absolute top-2 right-2 w-2 h-2 rounded-full transition-all ${
+                      <span className={`absolute top-2 right-2 w-2.5 h-2.5 rounded-full transition-all ${
                         isAvailable 
-                          ? 'bg-emerald-500 animate-pulse' 
+                          ? 'bg-emerald-500' 
                           : 'bg-rose-500'
                       }`} />
                     </button>
@@ -895,10 +915,10 @@ export default function Admin() {
               </div>
 
               {/* Footer */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-border">
+              <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
                 <Button 
                   onClick={() => setSelectedStudioForAvailability(null)}
-                  className="bg-primary hover:bg-primary-velvet text-white rounded-full px-8 h-11 font-semibold cursor-pointer shadow-lg shadow-primary/20"
+                  className="bg-primary hover:bg-primary-velvet text-white rounded-full px-8 h-10 font-semibold cursor-pointer shadow-lg shadow-primary/10"
                 >
                   {t('admin.save')}
                 </Button>
@@ -916,25 +936,25 @@ export default function Admin() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-3xl overflow-hidden rounded-3xl glass border border-border bg-background p-6 md:p-8 space-y-6 shadow-2xl"
+              className="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white border border-zinc-200 text-zinc-900 p-6 md:p-8 space-y-6 shadow-2xl"
             >
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-border pb-4">
-                <h3 className="text-2xl font-cinematic font-bold text-foreground">
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
+                <h3 className="text-xl font-cinematic font-bold text-zinc-900">
                   {editingStudio 
                     ? (language === 'ar' ? 'تعديل بيانات الاستوديو' : 'Edit Studio Details') 
                     : (language === 'ar' ? 'إضافة استوديو جديد بالكامل' : 'Create New Studio')}
                 </h3>
                 <button 
                   onClick={() => setIsStudioModalOpen(false)}
-                  className="p-2 rounded-full hover:bg-foreground/5 transition-colors cursor-pointer"
+                  className="p-2 rounded-full hover:bg-zinc-100 transition-colors cursor-pointer"
                 >
-                  <X className="w-5 h-5 text-muted-foreground hover:text-foreground" />
+                  <X className="w-5 h-5 text-zinc-400 hover:text-zinc-700" />
                 </button>
               </div>
 
               {/* Segmented Sub-tab bar */}
-              <div className="flex border-b border-border gap-2">
+              <div className="flex border-b border-zinc-100 gap-2">
                 {[
                   { id: 'basic', label: language === 'ar' ? '1. البيانات الأساسية' : '1. Basic Info' },
                   { id: 'media', label: language === 'ar' ? '2. الوصف والصور' : '2. Description & Images' },
@@ -947,7 +967,7 @@ export default function Admin() {
                     className={`flex-1 pb-3 text-sm font-semibold transition-all border-b-2 cursor-pointer ${
                       modalSubTab === subTab.id 
                         ? 'border-primary text-primary font-bold' 
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                        : 'border-transparent text-zinc-400 hover:text-zinc-600'
                     }`}
                   >
                     {subTab.label}
@@ -961,7 +981,7 @@ export default function Admin() {
                 {modalSubTab === 'basic' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                         {language === 'ar' ? 'الاسم بالإنجليزية' : 'Studio Name (English)'}
                       </label>
                       <input 
@@ -969,13 +989,13 @@ export default function Admin() {
                         required
                         value={studioName}
                         onChange={e => setStudioName(e.target.value)}
-                        className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground"
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900"
                         placeholder="e.g. The Velvet Room"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                         {language === 'ar' ? 'الاسم بالعربية' : 'Studio Name (Arabic)'}
                       </label>
                       <input 
@@ -983,19 +1003,19 @@ export default function Admin() {
                         required
                         value={studioNameAr}
                         onChange={e => setStudioNameAr(e.target.value)}
-                        className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground"
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900"
                         placeholder="مثال: غرفة المخمل"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                         {language === 'ar' ? 'الفئة بالإنجليزية' : 'Category (English)'}
                       </label>
                       <select 
                         value={studioCategory}
                         onChange={e => setStudioCategory(e.target.value)}
-                        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground"
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900"
                       >
                         <option value="Photography">Photography</option>
                         <option value="Video Production">Video Production</option>
@@ -1004,7 +1024,7 @@ export default function Admin() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                         {language === 'ar' ? 'الفئة بالعربية' : 'Category (Arabic)'}
                       </label>
                       <input 
@@ -1012,13 +1032,13 @@ export default function Admin() {
                         required
                         value={studioCategoryAr}
                         onChange={e => setStudioCategoryAr(e.target.value)}
-                        className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground"
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900"
                         placeholder="مثال: التصوير الفوتوغرافي"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                         {language === 'ar' ? 'السعر بالساعة ($)' : 'Price Per Hour ($)'}
                       </label>
                       <input 
@@ -1027,12 +1047,12 @@ export default function Admin() {
                         min="1"
                         value={studioPrice}
                         onChange={e => setStudioPrice(Number(e.target.value))}
-                        className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground"
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                         {language === 'ar' ? 'السعة (عدد الأشخاص)' : 'Capacity (Persons)'}
                       </label>
                       <input 
@@ -1041,7 +1061,7 @@ export default function Admin() {
                         min="1"
                         value={studioCapacity}
                         onChange={e => setStudioCapacity(Number(e.target.value))}
-                        className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground"
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900"
                       />
                     </div>
                   </div>
@@ -1051,43 +1071,74 @@ export default function Admin() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                           {language === 'ar' ? 'الوصف بالإنجليزية' : 'Description (English)'}
                         </label>
                         <textarea 
                           rows={4}
                           value={studioDesc}
                           onChange={e => setStudioDesc(e.target.value)}
-                          className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground resize-none"
+                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900 resize-none"
                           placeholder="Provide a luxurious description of the studio..."
                         />
                       </div>
                       
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                           {language === 'ar' ? 'الوصف بالعربية' : 'Description (Arabic)'}
                         </label>
                         <textarea 
                           rows={4}
                           value={studioDescAr}
                           onChange={e => setStudioDescAr(e.target.value)}
-                          className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground resize-none"
+                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900 resize-none"
                           placeholder="اكتب وصفاً مميزاً للمساحة باللغة العربية..."
                         />
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
-                        {language === 'ar' ? 'روابط الصور (رابط واحد في كل سطر)' : 'Studio Images (One URL per line)'}
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
+                        {language === 'ar' ? 'صور الاستوديو' : 'Studio Images'}
                       </label>
-                      <textarea 
-                        rows={4}
-                        value={imagesText}
-                        onChange={e => setImagesText(e.target.value)}
-                        className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground font-mono"
-                        placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
-                      />
+                      
+                      {/* Upload Area */}
+                      <div className="flex flex-col items-center justify-center border-2 border-dashed border-zinc-200 hover:border-primary/50 rounded-2xl p-6 bg-zinc-50 cursor-pointer transition-colors relative group">
+                        <input 
+                          type="file" 
+                          multiple 
+                          accept="image/*" 
+                          onChange={handleImageUpload}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
+                        <div className="text-center space-y-1">
+                          <Plus className="w-8 h-8 text-zinc-400 mx-auto group-hover:text-primary transition-colors" />
+                          <p className="text-sm font-semibold text-zinc-700">
+                            {language === 'ar' ? 'اضغط لرفع الصور من جهازك' : 'Click to upload images from your device'}
+                          </p>
+                          <p className="text-xs text-zinc-400">
+                            {language === 'ar' ? 'يدعم صيغ JPG, PNG, WEBP' : 'Supports JPG, PNG, WEBP'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Image Previews */}
+                      {uploadedImages.length > 0 && (
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-4">
+                          {uploadedImages.map((imgSrc, idx) => (
+                            <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-zinc-200 group bg-zinc-100">
+                              <img src={imgSrc} alt="Preview" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveImage(idx)}
+                                className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md cursor-pointer hover:bg-rose-600"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1096,27 +1147,27 @@ export default function Admin() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
+                        <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
                           {language === 'ar' ? 'الخدمات بالإنجليزية (خدمة واحدة في كل سطر)' : 'Amenities (English - One per line)'}
                         </label>
                         <textarea 
                           rows={4}
                           value={amenitiesText}
                           onChange={e => setAmenitiesText(e.target.value)}
-                          className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground"
+                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900"
                           placeholder="Private Dressing Room&#10;High-speed WiFi"
                         />
                       </div>
                       
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
+                        <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
                           {language === 'ar' ? 'الخدمات بالعربية (خدمة واحدة في كل سطر)' : 'Amenities (Arabic - One per line)'}
                         </label>
                         <textarea 
                           rows={4}
                           value={amenitiesArText}
                           onChange={e => setAmenitiesArText(e.target.value)}
-                          className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground"
+                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900"
                           placeholder="غرفة تبديل ملابس خاصة&#10;إنترنت عالي السرعة"
                         />
                       </div>
@@ -1124,27 +1175,27 @@ export default function Admin() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
+                        <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
                           {language === 'ar' ? 'المعدات بالإنجليزية (معدة واحدة في كل سطر)' : 'Equipment (English - One per line)'}
                         </label>
                         <textarea 
                           rows={4}
                           value={equipmentText}
                           onChange={e => setEquipmentText(e.target.value)}
-                          className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground"
+                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900"
                           placeholder="Profoto D2 Strobes&#10;Reflector Panels"
                         />
                       </div>
                       
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
+                        <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
                           {language === 'ar' ? 'المعدات بالعربية (معدة واحدة في كل سطر)' : 'Equipment (Arabic - One per line)'}
                         </label>
                         <textarea 
                           rows={4}
                           value={equipmentArText}
                           onChange={e => setEquipmentArText(e.target.value)}
-                          className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground"
+                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900"
                           placeholder="أجهزة فلاش Profoto D2&#10;ألواح عاكسة"
                         />
                       </div>
@@ -1153,14 +1204,14 @@ export default function Admin() {
                 )}
 
                 {/* Footer Buttons */}
-                <div className="flex justify-between items-center pt-4 border-t border-border">
+                <div className="flex justify-between items-center pt-4 border-t border-zinc-100">
                   <div className="flex gap-2">
                     {modalSubTab !== 'basic' && (
                       <Button
                         type="button"
                         variant="ghost"
                         onClick={() => setModalSubTab(modalSubTab === 'details' ? 'media' : 'basic')}
-                        className="border border-border rounded-full px-5 h-11 text-foreground cursor-pointer text-xs"
+                        className="border border-zinc-200 rounded-full px-5 h-10 text-zinc-700 hover:bg-zinc-100 cursor-pointer text-xs"
                       >
                         {language === 'ar' ? 'السابق' : 'Previous'}
                       </Button>
@@ -1169,7 +1220,7 @@ export default function Admin() {
                       <Button
                         type="button"
                         onClick={() => setModalSubTab(modalSubTab === 'basic' ? 'media' : 'details')}
-                        className="bg-primary/10 hover:bg-primary/20 text-primary rounded-full px-5 h-11 cursor-pointer text-xs font-semibold"
+                        className="bg-primary/10 hover:bg-primary/20 text-primary rounded-full px-5 h-10 cursor-pointer text-xs font-semibold"
                       >
                         {language === 'ar' ? 'التالي' : 'Next'}
                       </Button>
@@ -1181,7 +1232,7 @@ export default function Admin() {
                       type="button"
                       variant="ghost"
                       onClick={() => setIsStudioModalOpen(false)}
-                      className="border border-border rounded-full px-6 h-11 text-foreground cursor-pointer text-xs"
+                      className="border border-zinc-200 rounded-full px-6 h-10 text-zinc-700 hover:bg-zinc-100 cursor-pointer text-xs"
                     >
                       {language === 'ar' ? 'إلغاء' : 'Cancel'}
                     </Button>
@@ -1207,23 +1258,23 @@ export default function Admin() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md overflow-hidden rounded-3xl glass border border-border bg-background p-6 md:p-8 space-y-6 shadow-2xl"
+              className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white border border-zinc-200 text-zinc-900 p-6 md:p-8 space-y-6 shadow-2xl"
             >
-              <div className="flex items-center justify-between border-b border-border pb-4">
-                <h3 className="text-2xl font-cinematic font-bold text-foreground">
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
+                <h3 className="text-xl font-cinematic font-bold text-zinc-900">
                   {language === 'ar' ? 'إنشاء كوبون جديد' : 'Create New Coupon'}
                 </h3>
                 <button 
                   onClick={() => setIsCouponModalOpen(false)}
-                  className="p-2 rounded-full hover:bg-foreground/5 transition-colors cursor-pointer"
+                  className="p-2 rounded-full hover:bg-zinc-100 transition-colors cursor-pointer"
                 >
-                  <X className="w-5 h-5 text-muted-foreground hover:text-foreground" />
+                  <X className="w-5 h-5 text-zinc-400 hover:text-zinc-700" />
                 </button>
               </div>
 
               <form onSubmit={handleAddCouponSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                     {language === 'ar' ? 'رمز الكوبون' : 'Coupon Code'}
                   </label>
                   <input 
@@ -1231,13 +1282,13 @@ export default function Admin() {
                     required
                     value={couponCode}
                     onChange={e => setCouponCode(e.target.value)}
-                    className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground font-mono uppercase"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900 font-mono uppercase"
                     placeholder="e.g. SUMMER50"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                     {language === 'ar' ? 'نسبة الخصم (%)' : 'Discount Percentage (%)'}
                   </label>
                   <input 
@@ -1247,12 +1298,12 @@ export default function Admin() {
                     max="100"
                     value={couponDiscount}
                     onChange={e => setCouponDiscount(Number(e.target.value))}
-                    className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                     {language === 'ar' ? 'حد الاستخدام الأقصى' : 'Max Usage Limit'}
                   </label>
                   <input 
@@ -1261,12 +1312,12 @@ export default function Admin() {
                     min="1"
                     value={couponLimit}
                     onChange={e => setCouponLimit(Number(e.target.value))}
-                    className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                     {language === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date'}
                   </label>
                   <input 
@@ -1274,22 +1325,22 @@ export default function Admin() {
                     required
                     value={couponExpiry}
                     onChange={e => setCouponExpiry(e.target.value)}
-                    className="w-full bg-foreground/[0.03] border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 text-foreground"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 text-zinc-900"
                   />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
                   <Button 
                     type="button"
                     variant="ghost"
                     onClick={() => setIsCouponModalOpen(false)}
-                    className="border border-border rounded-full px-6 h-11 text-foreground cursor-pointer text-xs"
+                    className="border border-zinc-200 rounded-full px-6 h-10 text-zinc-700 hover:bg-zinc-100 cursor-pointer text-xs"
                   >
                     {language === 'ar' ? 'إلغاء' : 'Cancel'}
                   </Button>
                   <Button 
                     type="submit"
-                    className="bg-primary hover:bg-primary-velvet text-white rounded-full px-8 h-11 cursor-pointer text-xs font-semibold shadow-lg shadow-primary/20"
+                    className="bg-primary hover:bg-primary-velvet text-white rounded-full px-8 h-10 cursor-pointer text-xs font-semibold shadow-lg shadow-primary/10"
                   >
                     {language === 'ar' ? 'إنشاء' : 'Create'}
                   </Button>
