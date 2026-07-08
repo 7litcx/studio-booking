@@ -4,6 +4,7 @@ import { motion, useScroll, useMotionValueEvent } from 'framer-motion'
 import { Menu, X, Sun, Moon, Globe } from 'lucide-react'
 import { Button } from './ui/button'
 import { useLanguage } from '../lib/LanguageContext'
+import { useAuth } from '../lib/AuthContext'
 
 export default function Navbar() {
   const { scrollY } = useScroll()
@@ -12,6 +13,7 @@ export default function Navbar() {
   const { language, setLanguage, t } = useLanguage()
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const { user, logout } = useAuth()
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string, closeMobileMenu = false) => {
     e.preventDefault()
@@ -102,9 +104,26 @@ export default function Navbar() {
             <span className="font-cinematic">{t('nav.langToggle')}</span>
           </button>
 
-          <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors px-2">
-            {t('nav.signIn')}
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <Link 
+                to={user.role === 'admin' ? '/admin' : '/dashboard'} 
+                className="text-sm font-semibold hover:text-primary transition-colors px-2 text-foreground font-cinematic"
+              >
+                {user.role === 'admin' ? t('login.adminPanel') : t('login.dashboard')}
+              </Link>
+              <button 
+                onClick={logout} 
+                className="text-sm font-medium text-red-500 hover:text-red-600 transition-colors px-2 cursor-pointer font-cinematic"
+              >
+                {t('login.signOut')}
+              </button>
+            </div>
+          ) : (
+            <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors px-2">
+              {t('nav.signIn')}
+            </Link>
+          )}
           <Button className="bg-primary hover:bg-primary-velvet text-white rounded-full px-6">
             {t('nav.bookNow')}
           </Button>
@@ -173,13 +192,34 @@ export default function Navbar() {
           </div>
           
           <div className="h-px w-full bg-border" />
-          <Link 
-            to="/login" 
-            className="text-lg font-medium hover:text-primary transition-colors" 
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            {t('nav.signIn')}
-          </Link>
+          {user ? (
+            <>
+              <Link 
+                to={user.role === 'admin' ? '/admin' : '/dashboard'} 
+                className="text-lg font-semibold hover:text-primary transition-colors font-cinematic" 
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {user.role === 'admin' ? t('login.adminPanel') : t('login.dashboard')}
+              </Link>
+              <button 
+                onClick={() => {
+                  logout()
+                  setIsMobileMenuOpen(false)
+                }} 
+                className="text-lg font-medium text-red-500 hover:text-red-600 transition-colors text-left font-cinematic cursor-pointer"
+              >
+                {t('login.signOut')}
+              </button>
+            </>
+          ) : (
+            <Link 
+              to="/login" 
+              className="text-lg font-medium hover:text-primary transition-colors" 
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              {t('nav.signIn')}
+            </Link>
+          )}
           <Button className="bg-primary hover:bg-primary-velvet text-white w-full rounded-full">
             {t('nav.bookNow')}
           </Button>

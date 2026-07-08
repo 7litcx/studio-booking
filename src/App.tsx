@@ -11,6 +11,8 @@ import Dashboard from './pages/Dashboard'
 import Admin from './pages/Admin'
 import Login from './pages/Login'
 
+import ProtectedRoute from './components/ProtectedRoute'
+
 function App() {
   // Setup smooth scroll
   useEffect(() => {
@@ -43,8 +45,16 @@ function App() {
           <Route index element={<Home />} />
           <Route path="studio/:id" element={<StudioDetails />} />
           <Route path="book/:id" element={<Booking />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="admin" element={<Admin />} />
+          <Route path="dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="admin" element={
+            <ProtectedRoute requireAdmin>
+              <Admin />
+            </ProtectedRoute>
+          } />
         </Route>
         <Route path="/login" element={<Login />} />
       </Routes>
