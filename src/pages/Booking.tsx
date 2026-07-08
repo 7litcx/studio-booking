@@ -6,7 +6,7 @@ import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { toast } from 'sonner'
 import { useLanguage } from '../lib/LanguageContext'
-import { getStudioAvailability, formatDate } from '../lib/availability'
+import { getStudioAvailability, formatDate, getStudios } from '../lib/availability'
 
 const EQUIPMENT_OPTIONS = [
   { id: 'sony-fx3', price: 75 },
@@ -53,6 +53,9 @@ export default function Booking() {
   const { t, language } = useLanguage()
   const [step, setStep] = useState(1)
   
+  const studios = getStudios()
+  const currentStudio = studios.find(s => s.id === id) || studios[0]
+
   // State for Booking
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
@@ -101,7 +104,7 @@ export default function Booking() {
   }
 
   const calculateTotal = () => {
-    const baseRate = id === '2' ? 250 : id === '3' ? 85 : 150
+    const baseRate = currentStudio ? currentStudio.price : 150
     const equipmentCost = selectedEquipment.reduce((acc, eqId) => {
       const eq = EQUIPMENT_OPTIONS.find(o => o.id === eqId)
       return acc + (eq ? eq.price : 0)

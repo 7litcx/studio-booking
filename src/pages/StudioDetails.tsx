@@ -3,46 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Star, Shield, ArrowLeft, Check, Users, ArrowRight } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { useLanguage } from '../lib/LanguageContext'
-
-const STUDIO_DATA: Record<string, any> = {
-  "1": {
-    id: "1",
-    price: 150,
-    rating: 4.9,
-    capacity: 15,
-    images: [
-      "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1603993097397-89c963e325c7?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1589903308904-1010c2294adc?q=80&w=2070&auto=format&fit=crop"
-    ],
-    amenityCount: 5,
-    equipmentCount: 4
-  },
-  "2": {
-    id: "2",
-    price: 250,
-    rating: 5.0,
-    capacity: 40,
-    images: [
-      "https://images.unsplash.com/photo-1603993097397-89c963e325c7?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2070&auto=format&fit=crop"
-    ],
-    amenityCount: 5,
-    equipmentCount: 3
-  },
-  "3": {
-    id: "3",
-    price: 85,
-    rating: 4.8,
-    capacity: 4,
-    images: [
-      "https://images.unsplash.com/photo-1589903308904-1010c2294adc?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2070&auto=format&fit=crop"
-    ],
-    amenityCount: 4,
-    equipmentCount: 3
-  }
-}
+import { getStudios } from '../lib/availability'
 
 export default function StudioDetails() {
   const { id } = useParams()
@@ -50,16 +11,23 @@ export default function StudioDetails() {
   const { t, language } = useLanguage()
   
   const studioId = id || "1"
-  const studioInfo = STUDIO_DATA[studioId] || STUDIO_DATA["1"]
-  const [activeImage, setActiveImage] = useState(studioInfo.images[0])
+  const studios = getStudios()
+  const studioInfo = studios.find(s => s.id === studioId) || studios[0]
+  
+  const [activeImage, setActiveImage] = useState(studioInfo.images && studioInfo.images[0] ? studioInfo.images[0] : "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2070&auto=format&fit=crop")
 
-  // Generate lists based on the count in info
-  const amenities = Array.from({ length: studioInfo.amenityCount }, (_, idx) => 
-    t(`studio.${studioId}.amenity.${idx}`)
-  )
-  const equipment = Array.from({ length: studioInfo.equipmentCount }, (_, idx) => 
-    t(`studio.${studioId}.eq.${idx}`)
-  )
+  // Generate lists based on language
+  const amenities = language === 'ar' 
+    ? (studioInfo.amenitiesAr && studioInfo.amenitiesAr.length > 0 ? studioInfo.amenitiesAr : studioInfo.amenities)
+    : studioInfo.amenities
+    
+  const equipment = language === 'ar'
+    ? (studioInfo.equipmentAr && studioInfo.equipmentAr.length > 0 ? studioInfo.equipmentAr : studioInfo.equipment)
+    : studioInfo.equipment
+
+  const studioName = language === 'ar' ? (studioInfo.nameAr || studioInfo.name) : studioInfo.name
+  const studioCategory = language === 'ar' ? (studioInfo.categoryAr || studioInfo.category) : studioInfo.category
+  const studioDesc = language === 'ar' ? (studioInfo.descAr || studioInfo.desc) : studioInfo.desc
 
   return (
     <div className="pt-32 pb-32 min-h-screen bg-background">
@@ -79,16 +47,16 @@ export default function StudioDetails() {
             <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-border">
               <img 
                 src={activeImage} 
-                alt={t(`studio.${studioId}.name`)} 
+                alt={studioName} 
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="flex gap-4">
-              {studioInfo.images.map((img: string, idx: number) => (
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {studioInfo.images && studioInfo.images.map((img: string, idx: number) => (
                 <button 
                   key={idx} 
                   onClick={() => setActiveImage(img)}
-                  className={`relative aspect-[4/3] w-24 rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`relative aspect-[4/3] w-24 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${
                     activeImage === img ? 'border-primary' : 'border-transparent'
                   }`}
                 >
@@ -102,31 +70,31 @@ export default function StudioDetails() {
           <div className="space-y-8">
             <div>
               <span className="text-primary font-medium tracking-widest text-xs uppercase mb-2 block">
-                {t(`studio.${studioId}.category`)}
+                {studioCategory}
               </span>
-              <h1 className="text-4xl md:text-5xl font-cinematic font-bold mb-4">{t(`studio.${studioId}.name`)}</h1>
+              <h1 className="text-4xl md:text-5xl font-cinematic font-bold mb-4">{studioName}</h1>
               <div className="flex items-center gap-4 text-sm font-semibold">
                 <span className="flex items-center gap-1">
                   <Star className="w-4 h-4 text-primary fill-primary" />
-                  {studioInfo.rating} {t('details.rating')}
+                  {studioInfo.rating || 5.0} {t('details.rating')}
                 </span>
                 <span className="w-1 h-1 rounded-full bg-border" />
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <Users className="w-4 h-4" />
-                  {t('featured.capacity').replace('{capacity}', String(studioInfo.capacity))}
+                  {t('featured.capacity').replace('{capacity}', String(studioInfo.capacity || 10))}
                 </span>
               </div>
             </div>
 
             <p className="text-muted-foreground text-lg leading-relaxed">
-              {t(`studio.${studioId}.desc`)}
+              {studioDesc}
             </p>
 
             {/* Amenities */}
             <div>
               <h3 className="text-xl font-bold font-cinematic mb-4">{t('details.spaceAmenities')}</h3>
               <div className="grid grid-cols-2 gap-3">
-                {amenities.map((amenity: string, idx: number) => (
+                {amenities && amenities.map((amenity: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-2 text-muted-foreground">
                     <Check className="w-4 h-4 text-primary" />
                     <span>{amenity}</span>
@@ -139,7 +107,7 @@ export default function StudioDetails() {
             <div>
               <h3 className="text-xl font-bold font-cinematic mb-4">{t('details.includedGear')}</h3>
               <div className="grid grid-cols-1 gap-3">
-                {equipment.map((eq: string, idx: number) => (
+                {equipment && equipment.map((eq: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-3 p-4 rounded-xl glass border border-border">
                     <Shield className="w-5 h-5 text-primary shrink-0" />
                     <span className="text-sm">{eq}</span>
