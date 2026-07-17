@@ -1,18 +1,21 @@
-import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Check, ChevronRight, ChevronLeft, Calendar as CalendarIcon, Clock } from 'lucide-react'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { toast } from 'sonner'
-import { useLanguage } from '../lib/LanguageContext'
-import { getStudioAvailability, formatDate, getStudios } from '../lib/availability'
+"use client"
 
-const EQUIPMENT_OPTIONS = [
-  { id: 'sony-fx3', price: 75 },
-  { id: 'aputure-600d', price: 40 },
-  { id: 'dji-rs3', price: 25 },
-  { id: 'rode-mic-pack', price: 15 },
+import { useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Check, ChevronRight, ChevronLeft, Calendar as CalendarIcon, Clock, Minus, Plus } from 'lucide-react'
+import { Button } from '../../../components/ui/button'
+import { Input } from '../../../components/ui/input'
+import { toast } from 'sonner'
+import { useLanguage } from '../../../lib/LanguageContext'
+import { getStudioAvailability, formatDate, getStudios, createBooking, Studio, getEquipment } from '../../../lib/availability'
+import { supabase, isSupabaseConfigured } from '../../../lib/supabaseClient'
+import { useAuth } from '../../../lib/AuthContext'
+
+const FALLBACK_EQUIPMENT_OPTIONS = [
+  { id: 'e80a0a01-0000-0000-0000-000000000101', name: 'RED V-Raptor 8K VV', nameAr: 'كاميرا RED V-Raptor 8K VV', category: 'Cameras & Lenses', categoryAr: 'الكاميرات والعدسات', desc: 'Cinema camera', descAr: 'كاميرا سينمائية', price: 150, image: '', status: 'Available' },
+  { id: 'e80a0a02-0000-0000-0000-000000000102', name: 'Aputure LS 600d Pro', nameAr: 'إضاءة Aputure LS 600d Pro', category: 'Lighting & Grip', categoryAr: 'الإضاءة والمعدات المساندة', desc: 'Light', descAr: 'إضاءة', price: 80, image: '', status: 'Available' },
+  { id: 'e80a0a03-0000-0000-0000-000000000103', name: 'Shure SM7B Vocal Mic', nameAr: 'ميكروفون Shure SM7B Vocal Mic', category: 'Audio & Sound', categoryAr: 'الصوت والتسجيل', desc: 'Mic', descAr: 'ميكروفون', price: 25, image: '', status: 'Available' }
 ]
 
 const MONTH_NAMES = {
@@ -47,22 +50,109 @@ const getTimeSlots = (lang: string) => {
   return slots
 }
 
+const generateTimeSlots = (startTime: string, durationHours: string): string[] => {
+  if (!startTime) return []
+  const slots: string[] = []
+  const [hourStr, minStr] = startTime.split(':')
+  let hour = parseInt(hourStr, 10)
+  let min = parseInt(minStr, 10)
+  
+  const totalHalfHours = Math.round(parseFloat(durationHours) * 2)
+  for (let i = 0; i < totalHalfHours; i++) {
+    slots.push(`${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`)
+    min += 30
+    if (min >= 60) {
+      min -= 60
+      hour += 1
+    }
+  }
+  return slots
+}
+
 export default function Booking() {
-  const { id } = useParams()
-  const navigate = useNavigate()
+  const params = useParams()
+  const id = params?.id as string
+  const router = useRouter()
   const { t, language } = useLanguage()
   const [step, setStep] = useState(1)
   
-  const studios = getStudios()
-  const currentStudio = studios.find(s => s.id === id) || studios[0]
+  const [currentStudio, setCurrentStudio] = useState<Studio | null>(null)
+
+  useEffect(() => {
+    async function loadStudio() {
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { data, error } = await supabase.from('studios').select('*').eq('id', id || '1').single()
+          if (data && !error) {
+            setCurrentStudio({
+              id: String(data.id),
+              name: data.name,
+              nameAr: data.name_ar,
+              category: data.category,
+              categoryAr: data.category_ar,
+              desc: data.desc,
+              descAr: data.desc_ar,
+              price: Number(data.price),
+              capacity: Number(data.capacity),
+              rating: Number(data.rating || 5.0),
+              images: data.images || [],
+              amenities: data.amenities || [],
+              amenitiesAr: data.amenities_ar || [],
+              equipment: data.equipment || [],
+              equipmentAr: data.equipment_ar || []
+            })
+            return
+          }
+        } catch (e) {
+          console.error("Error loading studio in booking:", e)
+        }
+      }
+      const localStudios = getStudios()
+      setCurrentStudio(localStudios.find(s => s.id === id) || localStudios[0])
+    }
+    loadStudio()
+  }, [id])
 
   // State for Booking
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
-  const [duration, setDuration] = useState('2')
+  const [duration, setDuration] = useState('1')
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([])
+  const [equipmentOptions, setEquipmentOptions] = useState<any[]>(FALLBACK_EQUIPMENT_OPTIONS)
+
+  useEffect(() => {
+    async function loadEquipment() {
+      try {
+        const list = await getEquipment()
+        const active = list.filter(item => item.status === 'Available')
+        if (active.length > 0) {
+          setEquipmentOptions(active)
+        }
+      } catch (err) {
+        console.error("Failed to load equipment:", err)
+      }
+    }
+    loadEquipment()
+  }, [])
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null)
+  const [couponDiscount, setCouponDiscount] = useState(0)
+  const [couponError, setCouponError] = useState('')
+
+  const { user } = useAuth()
+
+  useEffect(() => {
+    if (user) {
+      if (user.name) setName(user.name)
+      if (user.email) setEmail(user.email)
+      if ((user as any).phone) setPhone((user as any).phone)
+    }
+  }, [user])
 
   // Calendar navigation states
   const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date())
@@ -91,25 +181,71 @@ export default function Booking() {
     setStep(prev => prev + 1)
   }
 
+  const handleApplyCoupon = (e: React.FormEvent) => {
+    e.preventDefault()
+    setCouponError('')
+    const code = couponCode.trim().toUpperCase()
+    if (!code) return
+
+    if (code === 'LUMIERE20') {
+      setAppliedCoupon('LUMIERE20')
+      setCouponDiscount(20)
+      toast.success(language === 'ar' ? 'تم تطبيق كوبون الخصم بنجاح (خصم 20%)!' : 'Coupon applied successfully (20% off)!')
+    } else if (code === 'SAVE10') {
+      setAppliedCoupon('SAVE10')
+      setCouponDiscount(10)
+      toast.success(language === 'ar' ? 'تم تطبيق كوبون الخصم بنجاح (خصم 10%)!' : 'Coupon applied successfully (10% off)!')
+    } else if (code === 'WELCOME50') {
+      setAppliedCoupon('WELCOME50')
+      setCouponDiscount(50)
+      toast.success(language === 'ar' ? 'تم تطبيق كوبون الخصم بنجاح (خصم 50%)!' : 'Coupon applied successfully (50% off)!')
+    } else {
+      setCouponError(language === 'ar' ? 'كوبون الخصم غير صالح' : 'Invalid coupon code')
+      toast.error(language === 'ar' ? 'كوبون الخصم غير صالح' : 'Invalid coupon code')
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name || !email) {
+    if (!name || !email || !phone) {
       toast.error(t('book.errorContact'))
       return
     }
-    toast.success(t('book.successMessage'))
-    setTimeout(() => {
-      navigate('/dashboard')
-    }, 1500)
+
+    const total = calculateTotal()
+    createBooking({
+      studio_id: id || '1',
+      studio_name: currentStudio?.name || 'Studio Room',
+      studio_name_ar: currentStudio?.nameAr || 'غرفة استوديو',
+      booking_date: date,
+      time_slots: generateTimeSlots(time, duration),
+      customer_name: phone ? `${name} | ${phone}` : name,
+      customer_email: email,
+      total_price: total,
+      status: 'Confirmed'
+    }).then((success) => {
+      if (success) {
+        toast.success(t('book.successMessage'))
+        setTimeout(() => {
+          router.push('/dashboard')
+        }, 1500)
+      } else {
+        toast.error('Failed to create booking')
+      }
+    })
   }
 
   const calculateTotal = () => {
     const baseRate = currentStudio ? currentStudio.price : 150
     const equipmentCost = selectedEquipment.reduce((acc, eqId) => {
-      const eq = EQUIPMENT_OPTIONS.find(o => o.id === eqId)
+      const eq = equipmentOptions.find(o => o.id === eqId)
       return acc + (eq ? eq.price : 0)
     }, 0)
-    return (baseRate * parseInt(duration)) + equipmentCost
+    const subtotal = (baseRate * parseInt(duration)) + equipmentCost
+    if (couponDiscount > 0) {
+      return Math.round(subtotal * (1 - couponDiscount / 100))
+    }
+    return subtotal
   }
 
   // Calendar calculations
@@ -261,21 +397,43 @@ export default function Booking() {
 
                   <div className="space-y-4">
                     <label className="text-sm font-medium text-muted-foreground block">{t('book.duration')}</label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {['2', '4', '8', '12'].map((hours) => (
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center bg-foreground/[0.03] border border-border h-12 rounded-xl px-2 w-full max-w-[200px] justify-between shadow-inner">
                         <button
-                          key={hours}
                           type="button"
-                          onClick={() => setDuration(hours)}
-                          className={`h-12 rounded-xl border transition-all text-sm font-semibold cursor-pointer ${
-                            duration === hours 
-                              ? 'border-primary bg-primary text-white shadow-[0_0_15px_rgba(177,18,38,0.2)]' 
-                              : 'border-border glass hover:bg-foreground/5 text-muted-foreground hover:text-foreground'
-                          }`}
+                          onClick={() => setDuration(prev => {
+                            const val = parseInt(prev) || 1
+                            return String(Math.max(1, val - 1))
+                          })}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-foreground/75 hover:text-white hover:bg-primary cursor-pointer transition-all active:scale-90"
                         >
-                          {t('book.hoursCount').replace('{hours}', hours)}
+                          <Minus className="w-4 h-4" />
                         </button>
-                      ))}
+                        <input
+                          type="number"
+                          min="1"
+                          max="24"
+                          value={duration}
+                          onChange={e => {
+                            const val = parseInt(e.target.value) || 1
+                            setDuration(String(Math.max(1, val)))
+                          }}
+                          className="bg-transparent text-center font-bold text-foreground w-12 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-base"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setDuration(prev => {
+                            const val = parseInt(prev) || 1
+                            return String(Math.min(24, val + 1))
+                          })}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-foreground/75 hover:text-white hover:bg-primary cursor-pointer transition-all active:scale-90"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <span className="text-sm font-semibold text-muted-foreground">
+                        {language === 'ar' ? 'ساعة / ساعات' : 'Hour(s)'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -301,7 +459,7 @@ export default function Booking() {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {EQUIPMENT_OPTIONS.map((eq) => (
+                {equipmentOptions.map((eq) => (
                   <div 
                     key={eq.id}
                     onClick={() => toggleEquipment(eq.id)}
@@ -310,10 +468,14 @@ export default function Booking() {
                     }`}
                   >
                     <div>
-                      <span className="text-xs font-semibold text-primary block uppercase tracking-wider mb-1">{t(`eq.${eq.id}.cat`)}</span>
-                      <h3 className="font-bold text-lg mb-1 text-foreground transition-colors group-hover:text-primary">{t(`eq.${eq.id}.name`)}</h3>
+                      <span className="text-xs font-semibold text-primary block uppercase tracking-wider mb-1">
+                        {language === 'ar' ? (eq.categoryAr || eq.category) : eq.category}
+                      </span>
+                      <h3 className="font-bold text-lg mb-1 text-foreground transition-colors group-hover:text-primary">
+                        {language === 'ar' ? (eq.nameAr || eq.name) : eq.name}
+                      </h3>
                       <span className="text-muted-foreground text-sm">
-                        {language === 'ar' ? `+ ${eq.price} دولار / الجلسة` : `+$${eq.price} / session`}
+                        {language === 'ar' ? `+ ${eq.price} ر.س / الجلسة` : `+${eq.price} SAR / session`}
                       </span>
                     </div>
                     <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 ${
@@ -367,19 +529,77 @@ export default function Booking() {
                       <div className="pt-3 border-t border-border space-y-2">
                         <span className="text-xs text-primary font-bold uppercase tracking-wider block">{t('book.summaryAddons')}</span>
                         {selectedEquipment.map(eqId => {
-                          const eq = EQUIPMENT_OPTIONS.find(o => o.id === eqId)
+                          const eq = equipmentOptions.find(o => o.id === eqId)
                           return (
                             <div key={eqId} className="flex justify-between text-xs text-muted-foreground">
-                              <span>{t(`eq.${eqId}.name`)}</span>
-                              <span>${eq?.price}</span>
+                              <span>{language === 'ar' ? (eq?.nameAr || eq?.name) : eq?.name}</span>
+                              <span>{language === 'ar' ? `${eq?.price} ر.س` : `${eq?.price} SAR`}</span>
                             </div>
                           )
                         })}
                       </div>
                     )}
+                    
+                    {/* Subtotal & Discount Breakdown */}
+                    <div className="pt-3 border-t border-border space-y-2">
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>{language === 'ar' ? 'المجموع الفرعي' : 'Subtotal'}</span>
+                        <span>
+                          {language === 'ar' 
+                            ? `${(currentStudio ? currentStudio.price : 150) * parseInt(duration) + selectedEquipment.reduce((acc, eqId) => acc + (equipmentOptions.find(o => o.id === eqId)?.price || 0), 0)} ر.س` 
+                            : `${(currentStudio ? currentStudio.price : 150) * parseInt(duration) + selectedEquipment.reduce((acc, eqId) => acc + (equipmentOptions.find(o => o.id === eqId)?.price || 0), 0)} SAR`}
+                        </span>
+                      </div>
+                      {couponDiscount > 0 && (
+                        <div className="flex justify-between text-xs text-green-500 font-semibold">
+                          <span>{language === 'ar' ? 'الخصم المطبق' : 'Applied Discount'} ({couponDiscount}%)</span>
+                          <span>
+                            {language === 'ar'
+                              ? `-${Math.round(((currentStudio ? currentStudio.price : 150) * parseInt(duration) + selectedEquipment.reduce((acc, eqId) => acc + (equipmentOptions.find(o => o.id === eqId)?.price || 0), 0)) * couponDiscount / 100)} ر.س`
+                              : `-${Math.round(((currentStudio ? currentStudio.price : 150) * parseInt(duration) + selectedEquipment.reduce((acc, eqId) => acc + (equipmentOptions.find(o => o.id === eqId)?.price || 0), 0)) * couponDiscount / 100)} SAR`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Total */}
                     <div className="pt-4 border-t border-border flex justify-between items-center text-lg font-bold">
                       <span>{t('book.summaryTotal')}</span>
-                      <span className="text-primary">${calculateTotal()}</span>
+                      <span className="text-primary">
+                        {language === 'ar' ? `${calculateTotal()} ر.س` : `${calculateTotal()} SAR`}
+                      </span>
+                    </div>
+
+                    {/* Coupon Input Form Element */}
+                    <div className="pt-4 border-t border-border/50 space-y-3">
+                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                        {language === 'ar' ? 'كوبون الخصم' : 'Discount Coupon'}
+                      </label>
+                      <div className="flex gap-2">
+                        <Input 
+                          placeholder={language === 'ar' ? 'مثال: SAVE10' : 'e.g. SAVE10'} 
+                          value={couponCode} 
+                          onChange={e => {
+                            setCouponCode(e.target.value)
+                            setCouponError('')
+                          }}
+                          className="bg-foreground/[0.03] border-border h-10 rounded-xl text-foreground text-xs focus:border-primary/50"
+                        />
+                        <Button 
+                          type="button" 
+                          onClick={handleApplyCoupon}
+                          className="bg-primary hover:bg-primary-velvet text-white rounded-xl h-10 px-4 text-xs font-semibold shrink-0"
+                        >
+                          {language === 'ar' ? 'تطبيق' : 'Apply'}
+                        </Button>
+                      </div>
+                      {couponError && <p className="text-xs text-red-500 font-semibold">{couponError}</p>}
+                      {appliedCoupon && (
+                        <p className="text-xs text-green-500 font-semibold flex items-center gap-1.5">
+                          <Check className="w-3.5 h-3.5" />
+                          {language === 'ar' ? `كوبون فعال: ${appliedCoupon}` : `Coupon active: ${appliedCoupon}`}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -403,6 +623,17 @@ export default function Booking() {
                       placeholder={t('book.emailPlaceholder')} 
                       value={email} 
                       onChange={e => setEmail(e.target.value)}
+                      className="bg-foreground/[0.03] border-border h-12 rounded-xl text-foreground focus:border-primary/50 focus-visible:ring-primary focus-visible:border-primary"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground">{t('book.phoneNumber')}</label>
+                    <Input 
+                      type="tel"
+                      placeholder={t('book.phonePlaceholder')} 
+                      value={phone} 
+                      onChange={e => setPhone(e.target.value)}
                       className="bg-foreground/[0.03] border-border h-12 rounded-xl text-foreground focus:border-primary/50 focus-visible:ring-primary focus-visible:border-primary"
                       required
                     />

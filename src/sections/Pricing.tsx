@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { useLanguage } from '../lib/LanguageContext'
 
 export default function Pricing() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
 
   const PLANS = [
     {
@@ -98,7 +98,9 @@ export default function Pricing() {
                 </div>
                 
                 <div className="flex items-baseline gap-1">
-                  <span className="text-5xl font-bold font-cinematic text-foreground">${plan.price}</span>
+                  <span className="text-5xl font-bold font-cinematic text-foreground">
+                    {language === 'ar' ? `${plan.price} ر.س` : `${plan.price} SAR`}
+                  </span>
                   <span className="text-muted-foreground text-sm">/ {plan.period}</span>
                 </div>
                 

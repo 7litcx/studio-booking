@@ -1,11 +1,40 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Camera, Lightbulb, Mic } from 'lucide-react'
+import Link from 'next/link'
 import { useLanguage } from '../lib/LanguageContext'
+import { getEquipment, EquipmentItem } from '../lib/availability'
+
+const mapCategory = (cat: string) => {
+  if (!cat) return 'cameras';
+  const c = cat.toLowerCase();
+  if (c.includes('camera') || c.includes('lens') || c.includes('عدس') || c.includes('كامير')) return 'cameras';
+  if (c.includes('light') || c.includes('grip') || c.includes('إضاء') || c.includes('اضاء')) return 'lighting';
+  if (c.includes('audio') || c.includes('sound') || c.includes('mic') || c.includes('صوت')) return 'audio';
+  return 'cameras';
+}
 
 export default function Equipment() {
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
+  const [equipmentList, setEquipmentList] = useState<EquipmentItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await getEquipment()
+        // Only show available equipment
+        const active = data.filter(item => item.status === 'Available')
+        setEquipmentList(active)
+      } catch (err) {
+        console.error("Failed to load equipment:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [])
 
   const EQUIPMENT_CATEGORIES = [
     { id: 'all', name: t('eq.all') },
@@ -14,60 +43,9 @@ export default function Equipment() {
     { id: 'audio', name: t('eq.audio'), icon: Mic }
   ]
 
-  const EQUIPMENT_ITEMS = [
-    {
-      id: 1,
-      name: t('eq.item.1.name'),
-      category: 'cameras',
-      price: 150,
-      desc: t('eq.item.1.desc'),
-      image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=600&auto=format&fit=crop'
-    },
-    {
-      id: 2,
-      name: t('eq.item.2.name'),
-      category: 'lighting',
-      price: 45,
-      desc: t('eq.item.2.desc'),
-      image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=600&auto=format&fit=crop'
-    },
-    {
-      id: 3,
-      name: t('eq.item.3.name'),
-      category: 'audio',
-      price: 15,
-      desc: t('eq.item.3.desc'),
-      image: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=600&auto=format&fit=crop'
-    },
-    {
-      id: 4,
-      name: t('eq.item.4.name'),
-      category: 'cameras',
-      price: 80,
-      desc: t('eq.item.4.desc'),
-      image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=600&auto=format&fit=crop'
-    },
-    {
-      id: 5,
-      name: t('eq.item.5.name'),
-      category: 'lighting',
-      price: 35,
-      desc: t('eq.item.5.desc'),
-      image: 'https://images.unsplash.com/photo-1520390138845-126468fc7d0a?q=80&w=600&auto=format&fit=crop'
-    },
-    {
-      id: 6,
-      name: t('eq.item.6.name'),
-      category: 'audio',
-      price: 25,
-      desc: t('eq.item.6.desc'),
-      image: 'https://images.unsplash.com/photo-1583244532610-2a234e7c3eca?q=80&w=600&auto=format&fit=crop'
-    }
-  ]
-
   const filteredItems = selectedCategory === 'all' 
-    ? EQUIPMENT_ITEMS 
-    : EQUIPMENT_ITEMS.filter(item => item.category === selectedCategory)
+    ? equipmentList 
+    : equipmentList.filter(item => mapCategory(item.category) === selectedCategory)
 
   return (
     <section className="py-32 bg-background relative overflow-hidden" id="equipment">
@@ -125,26 +103,34 @@ export default function Equipment() {
                   <div className="absolute inset-0 bg-black/40 z-10 transition-opacity duration-300 group-hover:opacity-20" />
                   <img 
                     src={item.image} 
-                    alt={item.name} 
+                    alt={language === 'ar' ? (item.nameAr || item.name) : item.name} 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute bottom-4 right-4 z-20 bg-black/60 px-3 py-1.5 rounded-full backdrop-blur-sm text-xs font-semibold border border-border text-white">
-                    ${item.price}/{t('eq.day')}
+                    {language === 'ar' ? `${item.price} ر.س / ${t('eq.day')}` : `${item.price} SAR / ${t('eq.day')}`}
                   </div>
                 </div>
                 
                 <div className="p-6">
                   <h3 className="text-xl font-bold font-cinematic mb-2 text-foreground group-hover:text-primary transition-colors">
-                    {item.name}
+                    {language === 'ar' ? (item.nameAr || item.name) : item.name}
                   </h3>
                   <p className="text-sm text-muted-foreground line-clamp-2">
-                    {item.desc}
+                    {language === 'ar' ? (item.descAr || item.desc) : item.desc}
                   </p>
                 </div>
               </motion.div>
             ))}
           </AnimatePresence>
         </motion.div>
+
+        <div className="mt-16 flex justify-center">
+          <Link href="/book-equipment">
+            <span className="bg-primary hover:bg-primary-velvet text-white rounded-full px-8 py-4 text-base font-semibold shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02] cursor-pointer inline-block">
+              {language === 'ar' ? 'حجز المعدات الآن' : 'Book Equipment Now'}
+            </span>
+          </Link>
+        </div>
       </div>
     </section>
   )

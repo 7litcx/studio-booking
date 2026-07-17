@@ -22,3 +22,25 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Next.js
+.next/
+out/
+
+# Vercel
+.vercel
+
+# Agents
+.agents/
+skills-lock.json
+
+# Temp test scripts
+check_cols.js
+count_studios.cjs
+query_tables.js
+signup_admin.js
+test_as_admin.js
+test_db.js
+test_fk.js
+test_insert_fields.js
+tsconfig.tsbuildinfo

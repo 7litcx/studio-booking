@@ -1,5 +1,5 @@
 import { ArrowRight, ArrowLeft } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { useLanguage } from '../lib/LanguageContext'
@@ -37,20 +37,20 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-lg mb-6">{t('footer.studios')}</h4>
             <ul className="space-y-4 text-muted-foreground">
-              <li><Link to="/#studios" className="hover:text-primary transition-colors">{t('cat.photography')}</Link></li>
-              <li><Link to="/#studios" className="hover:text-primary transition-colors">{t('cat.video')}</Link></li>
-              <li><Link to="/#studios" className="hover:text-primary transition-colors">{t('cat.podcast')}</Link></li>
-              <li><Link to="/#studios" className="hover:text-primary transition-colors">{t('cat.cyclorama')}</Link></li>
+              <li><Link href="/#studios" className="hover:text-primary transition-colors">{t('cat.photography')}</Link></li>
+              <li><Link href="/#studios" className="hover:text-primary transition-colors">{t('cat.video')}</Link></li>
+              <li><Link href="/#studios" className="hover:text-primary transition-colors">{t('cat.podcast')}</Link></li>
+              <li><Link href="/#studios" className="hover:text-primary transition-colors">{t('cat.cyclorama')}</Link></li>
             </ul>
           </div>
           
           <div>
             <h4 className="font-semibold text-lg mb-6">{t('footer.company')}</h4>
             <ul className="space-y-4 text-muted-foreground">
-              <li><Link to="/#studios" className="hover:text-primary transition-colors">{t('nav.studios')}</Link></li>
-              <li><Link to="/#equipment" className="hover:text-primary transition-colors">{t('nav.equipment')}</Link></li>
-              <li><Link to="/#pricing" className="hover:text-primary transition-colors">{t('nav.pricing')}</Link></li>
-              <li><Link to="/#faq" className="hover:text-primary transition-colors">{t('nav.faq')}</Link></li>
+              <li><Link href="/#studios" className="hover:text-primary transition-colors">{t('nav.studios')}</Link></li>
+              <li><Link href="/#equipment" className="hover:text-primary transition-colors">{t('nav.equipment')}</Link></li>
+              <li><Link href="/#pricing" className="hover:text-primary transition-colors">{t('nav.pricing')}</Link></li>
+              <li><Link href="/#faq" className="hover:text-primary transition-colors">{t('nav.faq')}</Link></li>
             </ul>
           </div>
           
@@ -71,8 +71,8 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <p>© 2026 Studio Booking. {t('footer.rights')}</p>
           <div className="flex gap-6">
-            <Link to="#" className="hover:text-primary transition-colors">{t('footer.legalPrivacy')}</Link>
-            <Link to="#" className="hover:text-primary transition-colors">{t('footer.legalTerms')}</Link>
+            <Link href="#" className="hover:text-primary transition-colors">{t('footer.legalPrivacy')}</Link>
+            <Link href="#" className="hover:text-primary transition-colors">{t('footer.legalTerms')}</Link>
           </div>
         </div>
       </div>

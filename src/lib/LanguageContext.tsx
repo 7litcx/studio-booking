@@ -66,7 +66,7 @@ const translations = {
     'featured.booked': 'Booked',
     'featured.capacity': 'Up to {capacity}',
     'featured.hour': 'hr',
-    'featured.bookNowPrice': 'Book Now - ${price}/hr',
+    'featured.bookNowPrice': 'Book Now - {price} SAR/hr',
 
     // How It Works
     'how.badge': 'Seamless Reservation',
@@ -76,8 +76,8 @@ const translations = {
     'how.step1Desc': 'Browse our curated catalog of premium photography, film, and audio studios equipped with distinct design themes and dimensions.',
     'how.step2Title': 'Select Gear & Schedule',
     'how.step2Desc': 'Pick your calendar slot, choose optional high-end rental packages (RED cameras, lights, audio sets), and select custom backdrop colors.',
-    'how.step3Title': 'Instant Access',
-    'how.step3Desc': 'Check out securely. Receive instant email confirmations, invoices, and digital pin codes for smart gate and studio access.',
+    'how.step3Title': 'Confirm & Create',
+    'how.step3Desc': 'Secure your booking instantly. Receive email confirmations, automated invoice receipts, and step-by-step instructions to begin your creative session.',
 
     // Equipment
     'eq.badge': 'High-End Production Gear',
@@ -113,7 +113,7 @@ const translations = {
     'pricing.plan1Price': '150',
     'pricing.plan1Period': 'hour',
     'pricing.plan1Desc': 'Perfect for quick portrait sessions, product shoots, or podcast recording.',
-    'pricing.plan1F1': 'Minimum booking: 2 hours',
+    'pricing.plan1F1': 'Minimum booking: 1 hour',
     'pricing.plan1F2': 'Standard lighting equipment included',
     'pricing.plan1F3': 'High-speed Wi-Fi & dressing rooms',
     'pricing.plan1F4': 'Assistance setting up standard backdrops',
@@ -247,7 +247,7 @@ const translations = {
     'book.continueToEquipment': 'Continue to Equipment Setup',
     'book.step2Title': 'Add Equipment & Gear',
     'book.step2Desc': 'Select any additional premium equipment for your session. Setup & tear-down are fully handled.',
-    'book.perSession': '+${price} / session',
+    'book.perSession': '+{price} SAR / session',
     'book.back': 'Back',
     'book.confirmDetails': 'Confirm Booking Details',
     'book.step3Title': 'Checkout & Secure Reservation',
@@ -259,8 +259,10 @@ const translations = {
     'book.summaryTotal': 'Total Estimated Cost',
     'book.fullName': 'Full Name',
     'book.emailAddress': 'Email Address',
+    'book.phoneNumber': 'Phone Number',
     'book.namePlaceholder': 'Enter your name',
     'book.emailPlaceholder': 'Enter your email',
+    'book.phonePlaceholder': 'Enter your phone number',
     'book.reserveNow': 'Reserve Now',
     'book.errorDateTime': 'Please choose an available date and time to continue.',
     'book.warnNoEquipment': 'Proceeding without additional equipment add-ons.',
@@ -355,8 +357,33 @@ const translations = {
     'dash.cancel': 'Cancel Booking',
     'dash.confirmed': 'Confirmed',
     'dash.pending': 'Pending',
-    'dash.cancelled': 'Cancelled',
     'dash.noBookings': 'No reservation records found.',
+    'dash.myBookings': 'My Bookings',
+    'dash.paymentsInvoices': 'Payments & Invoices',
+    'dash.savedStudios': 'Saved Studios',
+    'dash.notifications': 'Notifications',
+    'dash.profileSettings': 'Profile Settings',
+    'dash.upcomingBookings': 'Upcoming Bookings',
+    'dash.pastSessions': 'Past Sessions',
+    'dash.sessionScheduled': 'Session Scheduled',
+    'dash.noUpcoming': 'No upcoming bookings found.',
+    'dash.noPast': 'No past sessions recorded.',
+    'dash.paymentsReceipts': 'Payments & Receipts',
+    'dash.invoiceId': 'Invoice ID',
+    'dash.amount': 'Amount',
+    'dash.paid': 'Paid',
+    'dash.noInvoices': 'No invoices or payments found.',
+    'dash.savedSpaces': 'Saved Spaces',
+    'dash.noSaved': 'No saved spaces yet. Go to exploration to save studios.',
+    'dash.remove': 'Remove',
+    'dash.noNotifications': 'No new notifications.',
+    'dash.firstName': 'First Name',
+    'dash.lastName': 'Last Name',
+    'dash.company': 'Company',
+    'dash.saving': 'Saving...',
+    'dash.saveSettings': 'Save Settings',
+    'dash.profileSuccess': 'Profile updated successfully!',
+    'dash.estimatedFee': 'Estimated Fee',
 
     // Admin
     'admin.title': 'Lumière Admin Panel',
@@ -427,7 +454,7 @@ const translations = {
     'featured.booked': 'محجوز',
     'featured.capacity': 'حتى {capacity} شخص',
     'featured.hour': 'ساعة',
-    'featured.bookNowPrice': 'احجز الآن - {price}$/ساعة',
+    'featured.bookNowPrice': 'احجز الآن - {price} ر.س/ساعة',
 
     // How It Works
     'how.badge': 'حجز سلس وسهل',
@@ -437,8 +464,8 @@ const translations = {
     'how.step1Desc': 'تصفح كتالوجنا المنسق للاستوديوهات الفاخرة المجهزة بديكورات ومقاسات متباينة تلائم مختلف الرؤى الفنية.',
     'how.step2Title': 'حدد المعدات والجدول',
     'how.step2Desc': 'اختر موعدك في التقويم، واختر باقات تأجير المعدات الفاخرة (كاميرات RED، إضاءة احترافية، حزم الصوت)، والألوان المفضلة لديك.',
-    'how.step3Title': 'دخول فوري ومباشر',
-    'how.step3Desc': 'أكمل الدفع بأمان. ستتلقى تأكيداً فورياً عبر البريد الإلكتروني، والفاتورة، ورموز الدخول الرقمية للبوابة الذكية والاستوديو.',
+    'how.step3Title': 'أكّد وابدأ الإنتاج',
+    'how.step3Desc': 'احجز مساحتك بأمان. ستحصل على رسائل تأكيد فورية بالبريد الإلكتروني، والفواتير التلقائية، وإرشادات الدخول التفصيلية لبدء جلستك الإبداعية.',
 
     // Equipment
     'eq.badge': 'معدات إنتاج فني راقية',
@@ -474,7 +501,7 @@ const translations = {
     'pricing.plan1Price': '١٥٠',
     'pricing.plan1Period': 'ساعة',
     'pricing.plan1Desc': 'مثالي لجلسات التصوير السريعة، تصوير المنتجات، أو تسجيل البودكاست.',
-    'pricing.plan1F1': 'الحد الأدنى للحجز: ساعتان',
+    'pricing.plan1F1': 'الحد الأدنى للحجز: ساعة واحدة',
     'pricing.plan1F2': 'معدات إضاءة قياسية مشمولة',
     'pricing.plan1F3': 'إنترنت فائق السرعة وغرف تبديل الملابس',
     'pricing.plan1F4': 'مساعدة في إعداد الخلفيات القياسية',
@@ -608,7 +635,7 @@ const translations = {
     'book.continueToEquipment': 'المتابعة لتحديد المعدات',
     'book.step2Title': 'إضافة المعدات والأدوات الإضافية',
     'book.step2Desc': 'اختر أي معدات إضافية مميزة لجلستك. التجهيز والترتيب بعد الجلسة يتم إدارتها بالكامل من قبل فريقنا.',
-    'book.perSession': '+ {price} دولار / الجلسة',
+    'book.perSession': '+ {price} ر.س / الجلسة',
     'book.back': 'رجوع',
     'book.confirmDetails': 'تأكيد تفاصيل الحجز',
     'book.step3Title': 'تأكيد الدفع وحجز المساحة',
@@ -620,8 +647,10 @@ const translations = {
     'book.summaryTotal': 'التكلفة الإجمالية المقدرة',
     'book.fullName': 'الاسم الكامل',
     'book.emailAddress': 'البريد الإلكتروني',
+    'book.phoneNumber': 'رقم الجوال',
     'book.namePlaceholder': 'أدخل اسمك بالكامل',
     'book.emailPlaceholder': 'أدخل بريدك الإلكتروني',
+    'book.phonePlaceholder': 'أدخل رقم جوالك',
     'book.reserveNow': 'احجز الآن',
     'book.errorDateTime': 'يرجى اختيار تاريخ ووقت متاحين للمتابعة.',
     'book.warnNoEquipment': 'المتابعة بدون إضافة معدات اختيارية.',
@@ -716,8 +745,33 @@ const translations = {
     'dash.cancel': 'إلغاء هذا الحجز',
     'dash.confirmed': 'مؤكد ومقبول',
     'dash.pending': 'تحت المعالجة',
-    'dash.cancelled': 'ملغى ومسترجع',
     'dash.noBookings': 'لا توجد سجلات حجز مسجلة حالياً.',
+    'dash.myBookings': 'حجوزاتي',
+    'dash.paymentsInvoices': 'المدفوعات والفواتير',
+    'dash.savedStudios': 'الاستوديوهات المحفوظة',
+    'dash.notifications': 'الإشعارات',
+    'dash.profileSettings': 'إعدادات الملف الشخصي',
+    'dash.upcomingBookings': 'الحجوزات القادمة',
+    'dash.pastSessions': 'الجلسات السابقة',
+    'dash.sessionScheduled': 'تم جدولة الجلسة',
+    'dash.noUpcoming': 'لم يتم العثور على حجوزات قادمة.',
+    'dash.noPast': 'لم يتم تسجيل جلسات سابقة.',
+    'dash.paymentsReceipts': 'المدفوعات والإيصالات',
+    'dash.invoiceId': 'رقم الفاتورة',
+    'dash.amount': 'المبلغ',
+    'dash.paid': 'مدفوع',
+    'dash.noInvoices': 'لم يتم العثور على فواتير أو مدفوعات.',
+    'dash.savedSpaces': 'المساحات المحفوظة',
+    'dash.noSaved': 'لا توجد مساحات محفوظة بعد. انتقل إلى الاستكشاف لحفظ الاستوديوهات.',
+    'dash.remove': 'إزالة',
+    'dash.noNotifications': 'لا توجد إشعارات جديدة.',
+    'dash.firstName': 'الاسم الأول',
+    'dash.lastName': 'اسم العائلة',
+    'dash.company': 'الشركة',
+    'dash.saving': 'جاري الحفظ...',
+    'dash.saveSettings': 'حفظ الإعدادات',
+    'dash.profileSuccess': 'تم تحديث الملف الشخصي بنجاح!',
+    'dash.estimatedFee': 'الرسوم التقديرية',
 
     // Admin
     'admin.title': 'لوحة تحكم لوميير للإدارة',
@@ -738,41 +792,48 @@ const translations = {
 const LanguageContext = createContext<LanguageContextProps | undefined>(undefined)
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('language')
-      if (saved === 'ar' || saved === 'en') return saved
-      // Detect system preference
-      const browserLang = navigator.language.slice(0, 2)
-      return browserLang === 'ar' ? 'ar' : 'en'
-    }
-    return 'en'
-  })
+  const [language, setLanguageState] = useState<Language>('en')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('language')
+    if (saved === 'ar' || saved === 'en') {
+      setLanguageState(saved)
+    } else {
+      const browserLang = navigator.language?.slice(0, 2)
+      if (browserLang === 'ar') {
+        setLanguageState('ar')
+      }
+    }
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (mounted) {
       localStorage.setItem('language', language)
-      
       const root = document.documentElement
       root.lang = language
       root.dir = language === 'ar' ? 'rtl' : 'ltr'
     }
-  }, [language])
+  }, [language, mounted])
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang)
   }
 
   const t = (key: string): string => {
-    const dict = translations[language] as Record<string, string>
+    const currentLang = mounted ? language : 'en'
+    const dict = translations[currentLang] as Record<string, string>
     return dict[key] || translations['en'][key as keyof typeof translations['en']] || key
   }
 
-  const isRtl = language === 'ar'
+  const isRtl = mounted && language === 'ar'
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, isRtl }}>
-      {children}
+    <LanguageContext.Provider value={{ language: mounted ? language : 'en', setLanguage, t, isRtl }}>
+      <div style={{ opacity: mounted ? 1 : 0 }} className="transition-opacity duration-150">
+        {children}
+      </div>
     </LanguageContext.Provider>
   )
 }

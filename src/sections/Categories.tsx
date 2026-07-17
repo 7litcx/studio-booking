@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Camera, Video, Mic, Component, Smartphone, Building2, Music, Sparkles } from 'lucide-react'
+import { Camera, Video, Mic, Component, Smartphone, Music, Sparkles } from 'lucide-react'
 import { useLanguage } from '../lib/LanguageContext'
 
 export default function Categories() {
@@ -11,7 +11,6 @@ export default function Categories() {
     { name: t('cat.podcast'), icon: Mic, desc: t('cat.podcastDesc') },
     { name: t('cat.cyclorama'), icon: Component, desc: t('cat.cycloramaDesc') },
     { name: t('cat.content'), icon: Smartphone, desc: t('cat.contentDesc') },
-    { name: t('cat.sets'), icon: Building2, desc: t('cat.setsDesc') },
     { name: t('cat.music'), icon: Music, desc: t('cat.musicDesc') },
     { name: t('cat.creative'), icon: Sparkles, desc: t('cat.creativeDesc') },
   ]

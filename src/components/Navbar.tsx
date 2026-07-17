@@ -1,5 +1,8 @@
+'use client'
+
 import { useState, useEffect } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion'
 import { Menu, X, Sun, Moon, Globe } from 'lucide-react'
 import { Button } from './ui/button'
@@ -11,8 +14,8 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { language, setLanguage, t } = useLanguage()
-  const { pathname } = useLocation()
-  const navigate = useNavigate()
+  const pathname = usePathname()
+  const router = useRouter()
   const { user, logout } = useAuth()
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string, closeMobileMenu = false) => {
@@ -27,18 +30,21 @@ export default function Navbar() {
       }
       window.history.pushState(null, '', `/#${id}`)
     } else {
-      navigate(`/#${id}`)
+      router.push(`/#${id}`)
     }
   }
   
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') || 'light'
-    }
-    return 'light'
-  })
+  const [mounted, setMounted] = useState(false)
+  const [theme, setTheme] = useState('light')
 
   useEffect(() => {
+    setMounted(true)
+    const savedTheme = localStorage.getItem('theme') || 'light'
+    setTheme(savedTheme)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
     const root = window.document.documentElement
     if (theme === 'dark') {
       root.classList.add('dark')
@@ -46,7 +52,7 @@ export default function Navbar() {
       root.classList.remove('dark')
     }
     localStorage.setItem('theme', theme)
-  }, [theme])
+  }, [theme, mounted])
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark')
@@ -76,7 +82,7 @@ export default function Navbar() {
           ].map((item) => (
             <Link
               key={item.id}
-              to={`/#${item.id}`}
+              href={`/#${item.id}`}
               onClick={(e) => handleNavClick(e, item.id)}
               className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
             >
@@ -91,7 +97,7 @@ export default function Navbar() {
             className="p-2 rounded-full hover:bg-foreground/5 transition-colors text-foreground"
             aria-label="Toggle theme"
           >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            {mounted && theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
 
           {/* Language Switcher */}
@@ -107,7 +113,7 @@ export default function Navbar() {
           {user ? (
             <div className="flex items-center gap-3">
               <Link 
-                to={user.role === 'admin' ? '/admin' : '/dashboard'} 
+                href={user.role === 'admin' ? '/admin' : '/dashboard'} 
                 className="text-sm font-semibold hover:text-primary transition-colors px-2 text-foreground font-cinematic"
               >
                 {user.role === 'admin' ? t('login.adminPanel') : t('login.dashboard')}
@@ -120,13 +126,15 @@ export default function Navbar() {
               </button>
             </div>
           ) : (
-            <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors px-2">
+            <Link href="/login" className="text-sm font-medium hover:text-primary transition-colors px-2">
               {t('nav.signIn')}
             </Link>
           )}
-          <Button className="bg-primary hover:bg-primary-velvet text-white rounded-full px-6">
-            {t('nav.bookNow')}
-          </Button>
+          <Link href="/#studios">
+            <Button className="bg-primary hover:bg-primary-velvet text-white rounded-full px-6 cursor-pointer">
+              {t('nav.bookNow')}
+            </Button>
+          </Link>
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -154,7 +162,7 @@ export default function Navbar() {
           ].map((item) => (
             <Link
               key={item.id}
-              to={`/#${item.id}`}
+              href={`/#${item.id}`}
               className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
               onClick={(e) => handleNavClick(e, item.id, true)}
             >
@@ -171,7 +179,7 @@ export default function Navbar() {
               className="p-2 rounded-full hover:bg-foreground/5 transition-colors text-foreground"
               aria-label="Toggle theme"
             >
-              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {mounted && theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
           </div>
           
@@ -195,7 +203,7 @@ export default function Navbar() {
           {user ? (
             <>
               <Link 
-                to={user.role === 'admin' ? '/admin' : '/dashboard'} 
+                href={user.role === 'admin' ? '/admin' : '/dashboard'} 
                 className="text-lg font-semibold hover:text-primary transition-colors font-cinematic" 
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -213,16 +221,18 @@ export default function Navbar() {
             </>
           ) : (
             <Link 
-              to="/login" 
+              href="/login" 
               className="text-lg font-medium hover:text-primary transition-colors" 
               onClick={() => setIsMobileMenuOpen(false)}
             >
               {t('nav.signIn')}
             </Link>
           )}
-          <Button className="bg-primary hover:bg-primary-velvet text-white w-full rounded-full">
-            {t('nav.bookNow')}
-          </Button>
+          <Link href="/#studios" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+            <Button className="bg-primary hover:bg-primary-velvet text-white w-full rounded-full cursor-pointer">
+              {t('nav.bookNow')}
+            </Button>
+          </Link>
         </motion.div>
       )}
     </motion.header>

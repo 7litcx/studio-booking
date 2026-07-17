@@ -1,3 +1,5 @@
+'use client'
+
 import Hero from '../sections/Hero'
 import FeaturedStudios from '../sections/FeaturedStudios'
 import Categories from '../sections/Categories'
@@ -10,7 +12,7 @@ import Faq from '../sections/Faq'
 
 export default function Home() {
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full font-sans">
       <Hero />
       <HowItWorks />
       <FeaturedStudios />
